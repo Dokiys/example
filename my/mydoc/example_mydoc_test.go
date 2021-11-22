@@ -2,7 +2,7 @@ package mydoc_test
 
 import (
 	"fmt"
-	"go_test/mydoc"
+	"go_test/my/mydoc"
 )
 
 func Example() {
