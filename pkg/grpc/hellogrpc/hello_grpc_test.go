@@ -1,9 +1,9 @@
-package grpc
+package hellogrpc
 
 import (
 	"context"
 	"google.golang.org/grpc"
-	pb "grpc/hellogrpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"io"
 	"log"
 	"net"
@@ -14,16 +14,18 @@ import (
 const addr = "localhost:50055"
 
 type server struct {
-	pb.UnimplementedGreeterServer
+	addr string
+	UnimplementedGreeterServer
 }
+
 // SayHello implements hellogrpc.GreeterServer
-func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
+func (s *server) SayHello(ctx context.Context, in *HelloRequest) (*HelloReply, error) {
 	log.Printf("Received: %v", in.GetName())
-	return &pb.HelloReply{Message: "Hello " + in.GetName()}, nil
+	return &HelloReply{Message: s.addr + ":Hello " + in.GetName()}, nil
 }
 
 // SayMoreHello implements hellogrpc.GreeterServer
-func (s *server) SayMoreHello(stream pb.Greeter_SayMoreHelloServer) error {
+func (s *server) SayMoreHello(stream Greeter_SayMoreHelloServer) error {
 	for {
 		in, err := stream.Recv()
 		if err == io.EOF {
@@ -34,7 +36,7 @@ func (s *server) SayMoreHello(stream pb.Greeter_SayMoreHelloServer) error {
 		}
 
 		log.Printf("Received: %v", in.GetName())
-		reply := &pb.HelloReply{Message: "Hello " + in.GetName()}
+		reply := &HelloReply{Message: "Hello " + in.GetName()}
 		for i := 0; i < 3; i++ {
 			if err := stream.Send(reply); err != nil {
 				return err
@@ -59,9 +61,13 @@ func TestGrpcServer(t *testing.T) {
 	// Create the insecure server
 	{
 		s = grpc.NewServer()
+		RegisterGreeterServer(s, &Server{Addr: addr})
+
+		// 注册服务
+		//addrM = make(map[string]string, 1)
+		//addrM[myAddrKey] = addr
 	}
-	pb.RegisterGreeterServer(s, &server{})
-	
+
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -87,32 +93,32 @@ func TestGrpcClient(t *testing.T) {
 
 	//Set up a connection to the server.
 	{
-		conn, err = grpc.Dial(addr, grpc.WithInsecure())
+		conn, err = grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 	if err != nil {
 		log.Fatalf("failed to Dial: %v", err)
 	}
-	c := pb.NewGreeterClient(conn)
+	c := NewGreeterClient(conn)
 
 	// Contact the server and print out its response.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
 	const name = "zhangsan"
-	r, err := c.SayHello(ctx, &pb.HelloRequest{Name: name})
+	r, err := c.SayHello(ctx, &HelloRequest{Name: name})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Printf("Greeting: %s", r.GetMessage())
 }
 
-func TestGrpcClient2(t *testing.T) {
+func TestGrpcStreamClient(t *testing.T) {
 	//Set up a connection to the server.
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("failed to Dial: %v", err)
 	}
-	c := pb.NewGreeterClient(conn)
+	c := NewGreeterClient(conn)
 
 	// Contact the server and print out its response.
 	stream, err := c.SayMoreHello(context.Background())
@@ -138,7 +144,7 @@ func TestGrpcClient2(t *testing.T) {
 
 	names := []string{"zhangsan", "lisi", "wangwu"}
 	for _, name := range names {
-		if err := stream.Send(&pb.HelloRequest{Name: name}); err != nil {
+		if err := stream.Send(&HelloRequest{Name: name}); err != nil {
 			log.Fatalf("Failed to send a req: %v", err)
 		}
 		time.Sleep(time.Second)

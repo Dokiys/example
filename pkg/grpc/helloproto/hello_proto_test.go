@@ -1,4 +1,4 @@
-package grpc
+package helloproto
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -8,7 +8,6 @@ import (
 	"google.golang.org/protobuf/reflect/protoregistry"
 	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/dynamicpb"
-	pb "grpc/helloproto"
 	"io/ioutil"
 	"log"
 	"testing"
@@ -16,31 +15,31 @@ import (
 
 func TestHelloProto(t *testing.T) {
 	// The whole purpose of using protocol buffers is to serialize your data
-	bookOut := &pb.AddressBook{
-		People: []*pb.Person{{
+	bookOut := &AddressBook{
+		People: []*Person{{
 			Id:    1234,
 			Name:  "John Doe",
 			Email: "jdoe@example.com",
-			Phones: []*pb.Person_PhoneNumber{
-				{Number: "555-4321", Type: pb.Person_HOME},
+			Phones: []*Person_PhoneNumber{
+				{Number: "555-4321", Type: Person_HOME},
 			},
 		}},
 	}
 	data, err := proto.Marshal(bookOut)
 	assert.NoError(t, err)
 
-	bookIn := &pb.AddressBook{}
+	bookIn := &AddressBook{}
 	assert.NoError(t, proto.Unmarshal(data, bookIn))
 }
 
 func TestHelloProtoReflect(t *testing.T) {
-	book := &pb.AddressBook{
-		People: []*pb.Person{{
+	book := &AddressBook{
+		People: []*Person{{
 			Id:    1234,
 			Name:  "John Doe",
 			Email: "jdoe@example.com",
-			Phones: []*pb.Person_PhoneNumber{
-				{Number: "555-4321", Type: pb.Person_HOME},
+			Phones: []*Person_PhoneNumber{
+				{Number: "555-4321", Type: Person_HOME},
 			},
 		}},
 	}
@@ -60,12 +59,12 @@ func TestHelloProtoReflect(t *testing.T) {
 }
 
 func TestHelloProtoReflect2(t *testing.T) {
-	person := &pb.Person{
+	person := &Person{
 		Id:    1234,
 		Name:  "John Doe",
 		Email: "jdoe@example.com",
-		Phones: []*pb.Person_PhoneNumber{
-			{Number: "555-4321", Type: pb.Person_HOME},
+		Phones: []*Person_PhoneNumber{
+			{Number: "555-4321", Type: Person_HOME},
 		},
 	}
 	msg := person.ProtoReflect()
@@ -121,7 +120,7 @@ func TestHelloDescProto(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Deserialize
-	p := &pb.Person{}
+	p := &Person{}
 	err = proto.Unmarshal(b, p)
 	assert.NoError(t, err)
 
