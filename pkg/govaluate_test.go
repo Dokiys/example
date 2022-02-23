@@ -1,4 +1,4 @@
-package govaluate
+package pkg
 
 import (
 	"github.com/Knetic/govaluate"

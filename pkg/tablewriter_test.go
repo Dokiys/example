@@ -1,4 +1,4 @@
-package tablewriter
+package pkg
 
 import (
 	"bufio"
