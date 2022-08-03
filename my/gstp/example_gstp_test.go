@@ -45,9 +45,7 @@ type TemplateData struct {
 	//Map5 []map[string][]*Item
 }
 
-func (t *TemplateData) P() {
-	fmt.Println()
-}
+func (t *TemplateData) P() {}
 `
 	r := bytes.NewReader([]byte(src))
 

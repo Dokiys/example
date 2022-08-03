@@ -1,13 +1,8 @@
-package example
+package internal
 
 import (
-	"fmt"
 	"time"
 )
-
-func a() {
-	fmt.Println()
-}
 
 // Item Comment 1
 /*
@@ -37,6 +32,4 @@ type TemplateData struct {
 	//Map5 []map[string][]*Item
 }
 
-func (t *TemplateData) P() {
-	fmt.Println()
-}
+func (t *TemplateData) P() {}
