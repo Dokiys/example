@@ -1,4 +1,4 @@
-package gstp
+package gmfs
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 const specTab = "\t"
 const specEnter = "\n"
 
-func GenProto(r io.Reader, w io.Writer, exp regexp.Regexp) error {
+func GenMsg(r io.Reader, w io.Writer, exp regexp.Regexp) error {
 	src, err := ioutil.ReadAll(r)
 	if err != nil {
 		return err
@@ -50,12 +50,12 @@ func GenProto(r io.Reader, w io.Writer, exp regexp.Regexp) error {
 					continue
 				}
 
+				content += specEnter
 				content += declCmt
 				content += specEnter
 				content += genMsg(cmap, st, name)
 			}
 		}
-		content += specEnter
 	}
 
 	_, err = fmt.Fprint(w, content)
@@ -124,7 +124,7 @@ func getSelectorExprName(expr *ast.SelectorExpr) (name string) {
 func getIdentName(ident *ast.Ident) (name string) {
 	name = ident.Name
 	if ident.Name == "int" {
-		name = "int32"
+		name = fmt.Sprintf("int%d", 32<<(^uint(0)>>63))
 	}
 	return
 }

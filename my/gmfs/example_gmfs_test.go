@@ -1,11 +1,11 @@
-package gstp_test
+package gmfs_test
 
 import (
 	"bytes"
 	"os"
 	"regexp"
 
-	"github.com/Dokiys/gstp"
+	"github.com/Dokiys/gmfs"
 )
 
 func ExampleGenProto() {
@@ -50,7 +50,7 @@ func (t *TemplateData) P() {}
 	r := bytes.NewReader([]byte(src))
 
 	exp, _ := regexp.Compile(".*")
-	_ = gstp.GenProto(r, os.Stdout, *exp)
+	_ = gmfs.GenMsg(r, os.Stdout, *exp)
 	// Output:
 	//
 	//// Item Comment 1
@@ -60,7 +60,7 @@ func (t *TemplateData) P() {}
 	//// Item Comment 1
 	//message Item {
 	//	// Item ItemId Comment 1
-	//	int32 item_id = 1;
+	//	int64 item_id = 1;
 	//
 	//	string name = 2;
 	//
