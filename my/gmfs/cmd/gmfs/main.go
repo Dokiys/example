@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"syscall"
 
-	"github.com/Dokiys/gmfs"
+	"github.com/Dokiys/codemates/gmfs"
 )
 
 var s = flag.String("s", ".*", "Regexp match struct name.")

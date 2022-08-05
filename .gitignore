@@ -16,10 +16,6 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-# 010文件
-./010
-./010/**
-./assert/*_out*
 *local_test.go
 
 .DS_Store

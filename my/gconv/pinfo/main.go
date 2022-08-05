@@ -10,7 +10,7 @@ import (
 
 func main() {
 	cfg := &packages.Config{
-		Mode: packages.NeedName | packages.NeedTypes | packages.NeedTypesInfo | packages.NeedSyntax | packages.NeedImports | packages.NeedDeps,
+		Mode: packages.LoadImports | packages.LoadSyntax,
 		// TODO: Need to think about constants in test files. Maybe write type_string_test.go
 		// in a separate pass? For later.
 		Tests: false,
@@ -21,7 +21,10 @@ func main() {
 		panic(err)
 	}
 
-	ast.Inspect(pkgs[0].Syntax[0], inspect)
+	for _, im := range pkgs[0].Imports {
+		fmt.Println(im.Name)
+	}
+	//ast.Inspect(pkgs[0].Syntax[0], inspect)
 }
 
 func inspect(node ast.Node) bool {

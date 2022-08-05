@@ -5,10 +5,10 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/Dokiys/gmfs"
+	"github.com/Dokiys/codemates/gmfs"
 )
 
-func ExampleGenProto() {
+func ExampleGenMsg() {
 	src := `
 package example
 

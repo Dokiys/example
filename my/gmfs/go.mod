@@ -1,3 +1,3 @@
-module github.com/Dokiys/gmfs
+module github.com/Dokiys/codemates/gmfs
 
 go 1.16
