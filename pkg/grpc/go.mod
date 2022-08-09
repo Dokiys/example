@@ -1,6 +1,6 @@
 module grpc
 
-go 1.17
+go 1.18
 
 require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.3

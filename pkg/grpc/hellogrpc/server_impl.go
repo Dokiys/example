@@ -15,6 +15,7 @@ type Server struct {
 // SayHello implements hellogrpc.GreeterServer
 func (s *Server) SayHello(ctx context.Context, in *HelloRequest) (*HelloReply, error) {
 	log.Printf("Received: %v", in.GetName())
+	//return nil, errors.New("test!")
 	return &HelloReply{Message: s.Addr + ":Hello " + in.GetName()}, nil
 }
 

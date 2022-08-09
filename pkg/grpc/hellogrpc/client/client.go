@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"log"
+
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer"
@@ -9,7 +11,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/resolver"
 	"grpc/hellogrpc"
-	"log"
 )
 
 func init() {
@@ -33,6 +34,8 @@ func main() {
 	for i := 0; i < 5; i++ {
 		r, err := c.SayHello(context.Background(), &hellogrpc.HelloRequest{Name: "zhangsan"})
 		if err != nil {
+			//status.Status
+			//s, _ := status.FromError(err)
 			log.Fatal(err)
 		}
 		log.Printf("Greeting: %s", r.GetMessage())
