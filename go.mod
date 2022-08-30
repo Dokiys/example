@@ -10,7 +10,6 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pkg/errors v0.9.1
-	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/stretchr/testify v1.7.2
@@ -20,10 +19,10 @@ require (
 )
 
 require (
+	github.com/go-stack/stack v1.8.0
 	github.com/gookit/color v1.5.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/spf13/viper v1.12.0
-	golang.org/x/tools v0.1.5
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
