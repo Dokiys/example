@@ -19,10 +19,10 @@ require (
 )
 
 require (
-	github.com/go-stack/stack v1.8.0
 	github.com/gookit/color v1.5.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/spf13/viper v1.12.0
+	github.com/urfave/cli/v2 v2.11.2
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )

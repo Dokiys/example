@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package errors;
+
+import "errors/errors.proto";
+
+option go_package = "protoc-gen-myerrors/gen/myerrors;myerrors";
+
+enum ErrorReason {
+  option (errors.default_code) = 500;
+
+  InvalidParameter = 0 [(errors.code) = 400];
+  AccessForbidden = 1[(errors.code) = 403];
+  Unauthenticated = 2[(errors.code) = 401];
+  BusinessError = 3[(errors.code) = 400];
+  SystemError = 4[(errors.code) = 500];
+  NotFound = 5[(errors.code) = 400];
+
+  OrderNotFound = 500[(errors.code) = 400];
+  ItemNotFound = 600[(errors.code) = 400];
+}

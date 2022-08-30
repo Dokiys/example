@@ -28,6 +28,7 @@ proto_gateway:
         $(PROTO_GRPC_FILES)
 
 # protoc-gen-my
-.PHONY: protoc-gen-my
-protoc-gen-my:
-	protoc --proto_path=./protoc-gen-my --my_out=version=1.1,paths=source_relative:./protoc-gen-my/gen ./protoc-gen-my/gen/hellogrpc.proto
+MYERRORS_PROTO_FILES=$(shell find ./proto-gen-myeerors/proto -name *.proto)
+.PHONY: protoc-gen-myerrors
+protoc-gen-myerrors:
+	protoc --proto_path=./protoc-gen-myerrors --my_out=version=1.1,paths=source_relative:./protoc-gen-myerrors/gen ${MYERRORS_PROTO_FILES}
