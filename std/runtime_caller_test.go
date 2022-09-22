@@ -5,7 +5,11 @@ import (
 	"testing"
 )
 
-func s1(t *testing.T) {
+func TestRuntimeCaller(t *testing.T) {
+	callerWrap(t)
+}
+
+func caller(t *testing.T) {
 	pc1, file1, line1, ok1 := runtime.Caller(0)
 	if !ok1 {
 		t.Logf("Out of range！")
@@ -39,9 +43,25 @@ func s1(t *testing.T) {
 	t.Logf("%s:%d\n", file[split[1]:], line)
 }
 
-func s2(t *testing.T) {
-	s1(t)
+func callerWrap(t *testing.T) {
+	caller(t)
 }
-func TestRuntimeCaller(t *testing.T) {
-	s2(t)
+
+func TestRuntimeCallers(t *testing.T) {
+	callersWrap(t)
+}
+
+func callersWrap(t *testing.T) {
+	callers(t)
+}
+
+func callers(t *testing.T) {
+	pc := make([]uintptr, 10)
+	n := runtime.Callers(0, pc)
+	for i := 0; i < n; i++ {
+		funcPc := runtime.FuncForPC(pc[i])
+		t.Logf("func: [%s]\n", funcPc.Name())
+		file, line := funcPc.FileLine(pc[i])
+		t.Logf("stack: [%s:%d]\n", file, line)
+	}
 }
