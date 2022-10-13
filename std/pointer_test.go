@@ -3,6 +3,8 @@ package std
 import (
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // TestPointer 指向指针的指针
@@ -31,36 +33,53 @@ type B struct {
 
 // TestPointerPassByPointer 测试指针传递
 func TestPointerPassByPointer(t *testing.T) {
-	b := &B{i:1}
-	a := &A{b:b}
+	b := &B{i: 1}
+	a := &A{b: b}
 	fmt.Printf("before pass by pointer \n")
-	fmt.Printf("\tfunc a is %p\n",&a)
-	fmt.Printf("\tfunc a.b is %v\n",a.b)
+	fmt.Printf("\tfunc a is %p\n", &a)
+	fmt.Printf("\tfunc a.b is %v\n", a.b)
 	passByPointer(a)
 	fmt.Printf("after pass by pointer \n")
-	fmt.Printf("\tfunc a is %p\n",&a)
-	fmt.Printf("\tfunc a.b is %v\n",a.b)
+	fmt.Printf("\tfunc a is %p\n", &a)
+	fmt.Printf("\tfunc a.b is %v\n", a.b)
 }
 
 // TestPointerPassByValue 测试值传递
 func TestPointerPassByValue(t *testing.T) {
-	b := &B{i:1}
-	a := &A{b:b}
+	b := &B{i: 1}
+	a := &A{b: b}
 	fmt.Printf("before pass by value \n")
-	fmt.Printf("\tfunc a is %p\n",&a)
-	fmt.Printf("\tfunc a.b is %v\n",a.b)
+	fmt.Printf("\tfunc a is %p\n", &a)
+	fmt.Printf("\tfunc a.b is %v\n", a.b)
 	passByValue(*a)
 	fmt.Printf("after pass by value \n")
-	fmt.Printf("\tfunc a is %p\n",&a)
-	fmt.Printf("\tfunc a.b is %v\n",a.b)
+	fmt.Printf("\tfunc a is %p\n", &a)
+	fmt.Printf("\tfunc a.b is %v\n", a.b)
 }
 
 func passByPointer(a *A) {
-	b := B{i:2}
+	b := B{i: 2}
 	a.b = &b
 }
 
 func passByValue(a A) {
-	b := B{i:2}
+	b := B{i: 2}
 	a.b = &b
+}
+
+func TestPointerCopy(t *testing.T) {
+	b := &B{i: 1}
+	a := &A{b: b}
+	var copy_a = new(A)
+	*copy_a = *a
+	assert.True(t, copy_a.b == a.b)
+	copy_a = &A{b: nil}
+	copy_a.b = &*a.b
+	assert.True(t, copy_a != a)
+	assert.True(t, copy_a.b == a.b)
+
+	bb := *a.b
+	copy_a.b = &bb
+	assert.True(t, copy_a != a)
+	assert.True(t, copy_a.b != a.b)
 }
