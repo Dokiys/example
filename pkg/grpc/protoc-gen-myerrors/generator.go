@@ -5,9 +5,9 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/go-kratos/kratos/v2/errors"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-	"protoc-gen-go-myerrors/third_party/kratos/errors"
 
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"

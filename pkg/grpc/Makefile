@@ -1,22 +1,35 @@
+.PHONY: install
+install:
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28 &&  \
+	go install github.com/gogo/protobuf/protoc-gen-gofast@v1.3.2 && \
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2 &&  \
+	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.11.3 &&  \
+	go install github.com/go-kratos/kratos/cmd/protoc-gen-go-errors@v2.5.1
+
 PROTO_FILES=$(shell find ./helloproto/* -name *.proto)
+PROTO_GRPC_FILES=$(shell find ./hellogrpc/* -name *.proto)
+PROTO_GRPC_FILES=$(shell find ./gateway/* -name *.proto)
+
 .PHONY: proto
 proto:
-	protoc --proto_path=. --descriptor_set_out=helloproto/descriptor.desc --go_out=../ $(PROTO_FILES) google/protobuf/timestamp.proto
+	protoc --proto_path=. \
+		--descriptor_set_out=helloproto/descriptor.desc --go_out=../ \
+		$(PROTO_FILES)
 
 .PHONY: gofast_proto
 gofast_proto:
-	protoc --proto_path=. --gofast_out=Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types:../ $(PROTO_FILES)
+	protoc --proto_path=. \
+		--gofast_out=Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types:../ \
+		$(PROTO_FILES)
 
 # GRPC
-PROTO_GRPC_FILES=$(shell find ./hellogrpc/* -name *.proto)
 .PHONY: proto_grpc
 proto_grpc:
 	protoc --go_out=. --go_opt=paths=source_relative \
- 		    --go-grpc_out=. --go-grpc_opt=paths=source_relative \
- 		    $(PROTO_GRPC_FILES)
+		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
+		$(PROTO_GRPC_FILES)
 
 # gRPC Gateway
-PROTO_GRPC_FILES=$(shell find ./gateway/* -name *.proto)
 .PHONY: proto_gateway
 proto_gateway:
 	protoc --go_out=. --go_opt=paths=source_relative \
