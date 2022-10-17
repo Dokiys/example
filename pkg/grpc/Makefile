@@ -27,8 +27,5 @@ proto_gateway:
         --grpc-gateway_opt generate_unbound_methods=true \
         $(PROTO_GRPC_FILES)
 
-# protoc-gen-my
-MYERRORS_PROTO_FILES=$(shell find ./proto-gen-myeerors/proto -name *.proto)
-.PHONY: protoc-gen-myerrors
-protoc-gen-myerrors:
-	protoc --proto_path=./protoc-gen-myerrors --my_out=version=1.1,paths=source_relative:./protoc-gen-myerrors/gen ${MYERRORS_PROTO_FILES}
+# protoc-gen-myerrors
+include ./protoc-gen-myerrors/Makefile

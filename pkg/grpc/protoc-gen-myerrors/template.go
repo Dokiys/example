@@ -16,57 +16,100 @@ func Is{{.CamelValue}}(err error) bool {
 	e := errors.FromError(err)
 	return e.Reason == {{ .Name }}_{{ .Value }}.String() && e.Code == {{ .HTTPCode }} 
 }
-
-{{ if .HasComment }}{{ .Comment }}{{ end -}}
-func Error{{ .CamelValue }}(format string, args ...interface{}) *errors.Error {
-	 return errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), fmt.Sprintf(format, args...))
-}
-
-{{ if .HasComment }}{{ .Comment }}{{ end -}}
-func Error{{ .CamelValue }}WithMeta(err error) *errors.Error {
-	m := map[string]string{"location": location(), "error": err.Error()}
-	if errors.Is(err, sql.ErrNoRows) {
-		return Error{{ .CamelValue }}("数据不存在！").WithMetadata(m)
-	}
-	return ErrorSystemError("系统繁忙！").WithMetadata(m)
-}
-
 {{- end }}
 
-func SystemErrorWithMeta(err error) *errors.Error {
-	m := map[string]string{"location": location(), "error": err.Error()}
-	return errors.New(500, ErrorReason_SystemError.String(), "系统繁忙！").WithMetadata(m)
+{{ range .Errors }}
+
+{{ if .HasComment }}{{ .Comment }}{{ end -}}
+func Err{{ .CamelValue }}(format string, args ...interface{}) *errors.Error {
+	 return errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), fmt.Sprintf(format, args...))
+}
+{{- end }}
+
+{{ range .Errors }}
+{{ if .HasComment }}{{ .Comment }}{{ end -}}
+func Err{{ .CamelValue }}WithMeta(err error, msg string) *errors.Error {
+	return Err{{ .CamelValue }}(msg).WithMetadata(locationErrMeta(err))
+}
+{{- end }}
+
+{{ range .Errors }}
+{{ if .HasComment }}{{ .Comment }}{{ end -}}
+func TryErr{{ .CamelValue }}Wrap(err error, msg string) *errors.Error {
+	if e, ok := err.(*errors.Error); !ok {
+		return Err{{ .CamelValue }}(msg).WithMetadata(locationErrMeta(err))
+	} else {
+		e.Reason = msg + " " + e.Reason
+		return e.WithMetadata(locationErrMeta(err))
+	}
+}
+
+func TryErr{{ .CamelValue }}Wrapf(err error, format string, args ...interface{}) *errors.Error {
+	if e, ok := err.(*errors.Error); !ok {
+		return Err{{ .CamelValue }}(format, args).WithMetadata(locationErrMeta(err))
+	} else {
+		e.Reason = fmt.Sprintf(format, args) + " " + e.Reason
+		return e.WithMetadata(locationErrMeta(err))
+	}
+}
+{{- end }}
+
+func locationErrMeta(err error) map[string]string {
+	if err == nil {
+		return map[string]string{locKey: location()}
+	}
+
+	if ee := new(errors.Error); errors.As(err, &ee) {
+		m := ee.GetMetadata()
+		var hasLocation bool
+		for k, v := range m {
+			if k == locKey && len(v) > 0 {
+				hasLocation = true
+				break
+			}
+		}
+
+		if !hasLocation {
+			m[locKey] = location()
+		}
+		return m
+	}
+
+	return map[string]string{locKey: location(), "error": err.Error()}
 }
 
 func location() string {
-	_, lcErr, _, ok := runtime.Caller(2)
-	if !ok {
+	pc := make([]uintptr, 6)
+	n := runtime.Callers(1, pc)
+	if n <= 1 {
 		return ""
 	}
+	currentFuncPc := runtime.FuncForPC(pc[0])
+	currentFile, _ := currentFuncPc.FileLine(pc[0])
+	for i := 1; i < n; i++ {
+		file, line := runtime.FuncForPC(pc[i]).FileLine(pc[i])
 
-	_, lcCaller, line, ok := runtime.Caller(3)
-	if !ok {
-		return ""
-	}
-
-	if !strings.HasSuffix(lcErr, "errors.go") || strings.HasSuffix(lcCaller, "errors.go") {
-		return ""
-	}
-
-	var split [2]int
-	for i := 0; i < len(lcCaller) || i < len(lcErr); i++ {
-		if lcCaller[i] == '/' {
-			split[0], split[1] = i, split[0]
+		if filepath.Dir(currentFile) == filepath.Dir(file) {
+			continue
 		}
-		if lcCaller[i] != lcErr[i] {
-			break
+
+		var split [2]int
+		for i := 0; i < len(file) || i < len(currentFile); i++ {
+			if file[i] == '/' {
+				split[0], split[1] = i, split[0]
+			}
+			if file[i] != currentFile[i] {
+				break
+			}
 		}
+
+		if split[1]+1 > len(file) {
+			return ""
+		}
+		return fmt.Sprintf(" %s:%d ", file[split[1]+1:], line)
 	}
 
-	if split[1]+1 > len(lcCaller) {
-		return ""
-	}
-	return fmt.Sprintf("%s:%d\n", lcCaller[split[1]+1:], line)
+	return ""
 }
 `
 

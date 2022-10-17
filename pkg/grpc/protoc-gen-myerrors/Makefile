@@ -6,11 +6,12 @@ install:
 	&& go install .
 
 
-ERROR_PROTO_FILES=$(shell find ./proto/myerrors/* -name *.proto)
+ERROR_PROTO_FILES=$(shell find ./proto/* -name *.proto)
 .PHONY: genproto
 genproto:
-	protoc --proto_path=./proto/errors \
-	  --proto_path=./proto/myerrors \
-	  --go_out=paths=source_relative:./proto/gen \
-	  --go-myerrors_out=paths=source_relative:./proto/gen \
+	# --go-errors_out=paths=source_relative:./gen
+	go install . && protoc -I=./proto \
+	  -I=./third_party/kratos/errors \
+	  --go_out=paths=source_relative:./gen \
+	  --go-myerrors_out=paths=source_relative:./gen \
 	  ${ERROR_PROTO_FILES}

@@ -1,4 +1,4 @@
-module protoc-gen-go-myerrors/v2
+module protoc-gen-go-myerrors
 
 go 1.18
 
