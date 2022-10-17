@@ -2,6 +2,12 @@ package hellogrpc
 
 import (
 	"context"
+	"log"
+	"net"
+	"net/http"
+	"testing"
+	"time"
+
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/pkg/errors"
 	etcd "go.etcd.io/etcd/client/v3"
@@ -9,11 +15,6 @@ import (
 	"go.etcd.io/etcd/client/v3/naming/resolver"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"log"
-	"net"
-	"net/http"
-	"testing"
-	"time"
 )
 
 type Server struct {
@@ -71,7 +72,7 @@ func registerServer(ctx context.Context) error {
 		alive, _ := lease.KeepAlive(ctx, leaseResp.ID)
 		for {
 			select {
-			case <- alive:
+			case <-alive:
 			}
 		}
 	}()
