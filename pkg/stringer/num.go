@@ -2,6 +2,7 @@
 package stringer
 
 type Num int
+
 const (
 	One   Num = iota
 	Two   Num = iota
@@ -11,6 +12,7 @@ const (
 )
 
 type Code int32
+
 const (
 	Yi Code = 12
 	Er Code = 2

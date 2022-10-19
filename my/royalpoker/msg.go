@@ -17,8 +17,8 @@ type HubSessionMsg struct {
 }
 
 type HubSessionMsgData struct {
-	Owner     int         `json:"owner"`
-	Players   map[int]PlayerMsg `json:"players"`
+	Owner   int               `json:"owner"`
+	Players map[int]PlayerMsg `json:"players"`
 }
 
 type PlayerMsg struct {
@@ -40,8 +40,8 @@ func GenHubSessionMsg(hub *Hub, msg string) []byte {
 		Type: MSGTYPE_HUB_SESSION,
 		Msg:  msg,
 		Data: HubSessionMsgData{
-			Owner:     hub.Owner,
-			Players:   playerMsg,
+			Owner:   hub.Owner,
+			Players: playerMsg,
 		},
 	}
 	bytes, err := json.Marshal(act)

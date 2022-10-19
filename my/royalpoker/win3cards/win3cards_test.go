@@ -39,17 +39,17 @@ func BenchmarkWin3Cards(b *testing.B) {
 	}
 
 	b.Log()
-	b.Logf("测试次数：%d==============",b.N)
+	b.Logf("测试次数：%d==============", b.N)
 	seq := []string{"Leopard", "RoyalFlush", "Flush", "Straight", "Pair", "Single"}
 	var data [][]string
 	for _, t := range seq {
-		r := fmt.Sprintf("%f", float64(m[t]) / float64(b.N) * 100)
+		r := fmt.Sprintf("%f", float64(m[t])/float64(b.N)*100)
 		rate := r[:5] + "%"
 		data = append(data, []string{t, strconv.Itoa(m[t]), rate})
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Type","Times", "Rate"})
+	table.SetHeader([]string{"Type", "Times", "Rate"})
 	table.SetRowLine(true)
 	table.AppendBulk(data)
 	table.Render()

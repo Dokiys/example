@@ -100,6 +100,6 @@ func TestName(t *testing.T) {
 	var wg sync.Mutex
 
 	wg.Lock()
-	wg2:=wg
+	wg2 := wg
 	wg2.Unlock()
 }

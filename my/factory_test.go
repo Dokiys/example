@@ -27,7 +27,7 @@ type Config struct {
 
 type ClientFactory func(id int) Client
 
-//func BuildClientImpl(id int) Client {
+// func BuildClientImpl(id int) Client {
 func BuildClientImpl(id int) *Impl {
 	conf := doSomeGetConf(id)
 	return NewImpl(conf)
@@ -59,8 +59,8 @@ func NewClientFactory() ClientFactory {
 	}
 }
 
-//func NewImpl(a int, b int32, c int64, d string) *Impl {
-//func NewImpl(conf Config) Client {
+// func NewImpl(a int, b int32, c int64, d string) *Impl {
+// func NewImpl(conf Config) Client {
 func NewImpl(conf Config) *Impl {
 	fmt.Printf("%d,%d,%d,%s", conf.a, conf.b, conf.c, conf.d)
 	return &Impl{}
@@ -93,7 +93,7 @@ func TestImpl2(t *testing.T) {
 //	return &Impl{}
 //}
 
-//func NewDestroyer() Destroyer {
+// func NewDestroyer() Destroyer {
 func NewDestroyer() *Impl {
 	return &Impl{}
 }
@@ -107,7 +107,7 @@ func (c *Impl) Destroy() {
 }
 
 /*
-	配置参数
+配置参数
 */
 type MConfig map[int]Config
 

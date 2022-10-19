@@ -25,9 +25,7 @@ func TestEtcdClient(t *testing.T) {
 	}
 	l := concurrency.NewMutex(s, "/hello_mutex")
 	l.Lock(ctx)
-	time.Sleep(time.Second*5)
+	time.Sleep(time.Second * 5)
 	l.Unlock(ctx)
-	select{}
+	select {}
 }
-
-

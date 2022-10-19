@@ -8,7 +8,7 @@ func BenchmarkReverseList(b *testing.B) {
 		head = &ListNode{i, head}
 	}
 	b.ResetTimer()
-	for i:=0; i < b.N; i++{
+	for i := 0; i < b.N; i++ {
 		//head.String()
 		head = ReverseList(head)
 		//head.String()

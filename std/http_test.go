@@ -26,8 +26,9 @@ func TestHttpServer(t *testing.T) {
 	select {}
 }
 
-type Resp struct {}
-type Req struct {}
+type Resp struct{}
+type Req struct{}
+
 // TestHttpSendGet 测试http发送Get请求
 func TestHttpSendGet(t *testing.T) {
 	req, err := http.NewRequest("GET", "http://www.4399.com", nil)
@@ -56,7 +57,7 @@ func TestHttpSendPost(t *testing.T) {
 	bodyData, err := json.Marshal(param)
 	assert.NoError(t, err)
 
-	req, err := http.NewRequest( "POST", "http://www.4399.com", bytes.NewReader(bodyData))
+	req, err := http.NewRequest("POST", "http://www.4399.com", bytes.NewReader(bodyData))
 	assert.NoError(t, err)
 	req.Header.Set("Content-Type", "application/json")
 

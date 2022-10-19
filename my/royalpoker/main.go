@@ -20,10 +20,10 @@ var (
 )
 
 type User struct {
-	Id       int	`yaml:"id"`
-	Name     string	`yaml:"name"`
-	Password string	`yaml:"password"`
-	IsAdmin  bool	`yaml:"is_admin"`
+	Id       int    `yaml:"id"`
+	Name     string `yaml:"name"`
+	Password string `yaml:"password"`
+	IsAdmin  bool   `yaml:"is_admin"`
 }
 
 func init() {
@@ -57,6 +57,7 @@ var addr = flag.String("addr", "localhost:8080", "http service address")
 
 //go:embed templates
 var FS embed.FS
+
 func main() {
 	flag.Parse()
 
@@ -77,7 +78,7 @@ func main() {
 	r.POST("/hub/start", TokenHandle, handler.startHub)
 	r.POST("/hub/closeHub", TokenHandle, handler.closeHub)
 
-	err := r.Run(":"+strings.Split(*addr, ":")[1])
+	err := r.Run(":" + strings.Split(*addr, ":")[1])
 	if err != nil {
 		panic(err)
 	}

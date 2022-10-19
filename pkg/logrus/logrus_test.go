@@ -39,5 +39,5 @@ func TestLogrusOut(t *testing.T) {
 		log.Error("Failed to log to file, using default stderr")
 	}
 
-	log.Info("Hello First File Log")		// 输出到logrus.log文件
+	log.Info("Hello First File Log") // 输出到logrus.log文件
 }

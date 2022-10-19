@@ -79,7 +79,7 @@ func (self *W3cSession) Run(ctx context.Context, players []int) error {
 	}
 
 	// 结束信息
-	time.Sleep(1*time.Second)
+	time.Sleep(1 * time.Second)
 	self.BroadcastResult(ctx)
 	return nil
 }
@@ -123,7 +123,7 @@ func (self *W3cSession) WaitReady(ctx context.Context) {
 func (self *W3cSession) Play(ctx context.Context, round int) (int, error) {
 	l := len(self.Players)
 	players := make([]int, l)
-	j := round%l
+	j := round % l
 	for i, id := range self.Players {
 		players[(i+j)%l] = id
 	}

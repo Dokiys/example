@@ -15,7 +15,7 @@ func TestErrWrap(t *testing.T) {
 
 	var nilErr error
 	e2 := errors.Wrapf(nilErr, "err2")
-	t.Logf("e2: %s", e2)			// e2也为nil
+	t.Logf("e2: %s", e2) // e2也为nil
 }
 
 // TestErrTagError	// 标记错误
@@ -25,11 +25,13 @@ func TestErrTagError(t *testing.T) {
 	t.Log(e1.Error() == e2.Error())
 }
 
-type MyErr struct { msg string }
+type MyErr struct{ msg string }
+
 func (self MyErr) Error() string     { return self.msg }
 func (self MyErr) IsTemporary() bool { return true }
 
-type Temporary interface { IsTemporary() bool }
+type Temporary interface{ IsTemporary() bool }
+
 // TestErrChain 错误链判断错误
 func TestErrChain(t *testing.T) {
 	err1 := MyErr{msg: "myErr1"}

@@ -6,9 +6,9 @@ import (
 )
 
 type Student struct {
-	Id int
+	Id   int
 	Name string
-	Age int
+	Age  int
 }
 
 // TestReflect 测试反射
@@ -27,7 +27,7 @@ func TestReflect(t *testing.T) {
 
 	//打印reVal类型，使用 reVal，打印Name 成员 失败。无法索引Name成员
 	//fmt.Printf("reVal=%T, name=%v",reVal,  reVal.Name)
-	t.Logf("reVal=%T\n",reVal)
+	t.Logf("reVal=%T\n", reVal)
 
 	// 将 reVal 转成 interface
 	iVal := reVal.Interface()
@@ -45,7 +45,7 @@ func TestReflect(t *testing.T) {
 // TestReflectCall 反射调用函数
 func TestReflectCall(t *testing.T) {
 	f := func(v int) {
-		t.Logf("get value: %d",v)
+		t.Logf("get value: %d", v)
 	}
 	num := 123
 
@@ -59,7 +59,7 @@ func TestReflectCall(t *testing.T) {
 	params := []reflect.Value{reflect.ValueOf(iNum)}
 
 	result := valueF.Call(params)
-	t.Logf("result len: %d",len(result))
+	t.Logf("result len: %d", len(result))
 }
 
 // TestReflectSliceIndex 测试反射index切片

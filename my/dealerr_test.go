@@ -6,11 +6,12 @@ import (
 	"testing"
 )
 
-type MyErr struct {	msg string }
+type MyErr struct{ msg string }
+
 func (self MyErr) Error() string     { return self.msg }
 func (self MyErr) IsTemporary() bool { return true }
 
-type Temporary interface { IsTemporary() bool }
+type Temporary interface{ IsTemporary() bool }
 
 func IsTemporary(err error) bool {
 	// v1
@@ -29,7 +30,7 @@ func TestRaiseErr(t *testing.T) {
 	err := doSomething()
 	if err != nil {
 		//return fmt.Errorf("call doSomething() Err: %s", err.Error())
-		e :=  errors.New(fmt.Sprintf("call doSomething() Err: %s\n\t", err.Error()))
+		e := errors.New(fmt.Sprintf("call doSomething() Err: %s\n\t", err.Error()))
 		t.Log(e)
 	}
 }

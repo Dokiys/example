@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-type Worker struct {}
+type Worker struct{}
 
 func (self Worker) HelloWork() bool {
 	print("Hello Work!\n")

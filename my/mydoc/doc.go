@@ -5,6 +5,6 @@
 //	and check in http://localhost:6060/pkg/mydoc/
 
 /*
-	Package mydoc shows how to use go doc.
+Package mydoc shows how to use go doc.
 */
 package mydoc

@@ -18,15 +18,14 @@ import (
 
 // 1.2 Please write down the time complexity of your program in terms of big O notation. Is it possible to improve the program?
 func IsPrime(number int) bool {
-	for i:=2; i <= int(math.Sqrt(float64(number))); i++ {
-		if number % i == 0 {
+	for i := 2; i <= int(math.Sqrt(float64(number))); i++ {
+		if number%i == 0 {
 			return true
 		}
 	}
 
 	return true
 }
-
 
 //禁止搜索答案，可以搜索类库的使用
 //请在备注里面写下搜索的关键词以及查看的网页的链接
@@ -42,9 +41,9 @@ func IsPrime(number int) bool {
 
 // 2.2 Is it possible to improve the program?
 
-func IsFirstNLager(n,m int) bool {
-	strN := fmt.Sprintf("%d%d",n,m)
-	strM := fmt.Sprintf("%d%d",m,n)
+func IsFirstNLager(n, m int) bool {
+	strN := fmt.Sprintf("%d%d", n, m)
+	strM := fmt.Sprintf("%d%d", m, n)
 
 	return strN > strM
 }
@@ -54,24 +53,23 @@ func QuickSortNumber(nums []int) {
 		return
 	}
 	head := nums[0]
-	i,p := 0,len(nums)-1
+	i, p := 0, len(nums)-1
 	for i < p {
-		if IsFirstNLager(nums[i],head) {
+		if IsFirstNLager(nums[i], head) {
 			i++
 		} else {
-			nums[i],nums[p] = nums[p],nums[i]
+			nums[i], nums[p] = nums[p], nums[i]
 			p--
 		}
 	}
 
-	if IsFirstNLager(head,nums[i]) {
-		nums[i],nums[0] = nums[0],nums[i]
+	if IsFirstNLager(head, nums[i]) {
+		nums[i], nums[0] = nums[0], nums[i]
 	}
 
 	QuickSortNumber(nums[:i])
 	QuickSortNumber(nums[i:])
 }
-
 
 func LargestNumber(nums []int) string {
 	QuickSortNumber(nums)
@@ -82,8 +80,8 @@ func LargestNumber(nums []int) string {
 	//})
 
 	var s string
-	for _,n:= range nums {
-		s = fmt.Sprintf("%s%d",s,n)
+	for _, n := range nums {
+		s = fmt.Sprintf("%s%d", s, n)
 	}
 
 	return s
@@ -92,8 +90,8 @@ func LargestNumber(nums []int) string {
 func TestMethod(t *testing.T) {
 	fmt.Println("is prime 2 = ", IsPrime(2))
 
-	fmt.Println("IsFirstNLager is: ", IsFirstNLager(5,30))
+	fmt.Println("IsFirstNLager is: ", IsFirstNLager(5, 30))
 
-	fmt.Println("largest number 10, 2 =", LargestNumber([]int{3,30}))
-	fmt.Println("largest number =", LargestNumber([]int{3,30,34,5,9}))
+	fmt.Println("largest number 10, 2 =", LargestNumber([]int{3, 30}))
+	fmt.Println("largest number =", LargestNumber([]int{3, 30, 34, 5, 9}))
 }

@@ -22,7 +22,7 @@ func distinct(s interface{}, f interface{}) interface{} {
 	// 利用map去重
 	m := make(map[interface{}]struct{}, l>>1)
 	fv := reflect.ValueOf(f)
-	iSlice:= make([]reflect.Value, 0, l>>1)
+	iSlice := make([]reflect.Value, 0, l>>1)
 	for i := 0; i < l; i++ {
 		v := sv.Index(i)
 		k := fv.Call([]reflect.Value{v})[0].Interface()
@@ -58,7 +58,7 @@ func TestDistinctString(t *testing.T) {
 
 // TestDistinctByStruct 测试根据指定函数去重结构体
 func TestDistinctByStruct(t *testing.T) {
-	type a struct { Id int32 }
+	type a struct{ Id int32 }
 	as := []*a{
 		{Id: 1},
 		{Id: 1},

@@ -107,7 +107,7 @@ func (self P) Print2(wg *sync.WaitGroup, ch chan int) {
 		}
 		print(self.arr[self.i])
 		self.i++
-		ch <- (self.c+1)%3
+		ch <- (self.c + 1) % 3
 		if self.i == 3 && self.c != 0 {
 			wg.Done()
 			return

@@ -23,7 +23,7 @@ func (self *Win3Cards) CutTheDeck() {
 			202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214,
 			302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314,
 		},
-		v:  common.RandAlphabetStr(10),
+		v: common.RandAlphabetStr(10),
 	}
 }
 
@@ -41,7 +41,7 @@ func (self *Win3Cards) Deal() (HandCard, error) {
 	cards := [3]int{}
 	for i := 0; i < 3; i++ {
 		for {
-			n := common.RandNum(len(remainDc)-i)
+			n := common.RandNum(len(remainDc) - i)
 			if remainDc[n] == 0 {
 				remainDc = append(remainDc[:n], remainDc[n+1:]...)
 				continue
@@ -57,4 +57,3 @@ func (self *Win3Cards) Deal() (HandCard, error) {
 	stack.c++
 	return HandCard{Cards: cards, v: stack.v}, nil
 }
-

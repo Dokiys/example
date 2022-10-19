@@ -17,15 +17,15 @@ type PlaySession interface {
 	InfoPlayerSession(ctx context.Context, id int)
 }
 type Hub struct {
-	Id      int
-	Owner   int
-	Players map[int]Player
+	Id          int
+	Owner       int
+	Players     map[int]Player
 	playSession PlaySession
 	IsStarted   bool
 
-	ctx         context.Context
-	close       chan struct{}
-	l           sync.Mutex
+	ctx   context.Context
+	close chan struct{}
+	l     sync.Mutex
 }
 
 var hubMap map[int]*Hub
@@ -39,7 +39,7 @@ func NewHub(owner int) *Hub {
 		Id:      id,
 		Owner:   owner,
 		Players: make(map[int]Player),
-		close: make(chan struct{}),
+		close:   make(chan struct{}),
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
@@ -62,6 +62,7 @@ func NewHub(owner int) *Hub {
 }
 
 var hubLock sync.Mutex
+
 func (self *Hub) Register(player Player) error {
 	hubLock.Lock()
 	defer hubLock.Unlock()

@@ -43,7 +43,7 @@ func main() {
 }
 
 /*
-	Server discovery
+Server discovery
 */
 const scheme = "myresolve"
 
@@ -76,7 +76,7 @@ func (self *MyResolver) ResolveNow(resolver.ResolveNowOptions) {}
 func (self *MyResolver) Close()                                {}
 
 /*
-	Load Balancer
+Load Balancer
 */
 const lbName = "mybalancer"
 

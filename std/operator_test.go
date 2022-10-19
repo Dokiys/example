@@ -6,9 +6,9 @@ import (
 
 // TestOperatorBitOperation 位运算
 func TestOperatorBitOperation(t *testing.T) {
-	i,j := 8, 7
-	t.Log(i >> 2)	// 2
-	t.Log(j >> 2)	// 1
+	i, j := 8, 7
+	t.Log(i >> 2) // 2
+	t.Log(j >> 2) // 1
 }
 
 // TestOperatorOver 位移超出
@@ -24,5 +24,5 @@ func TestOperatorOver(t *testing.T) {
 func TestOperatorFlag(t *testing.T) {
 	//i := 1
 	var i int64 = -100
-	t.Logf("%d", 2 + i>>64)
+	t.Logf("%d", 2+i>>64)
 }

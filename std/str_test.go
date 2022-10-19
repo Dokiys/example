@@ -143,7 +143,7 @@ func TestStringToUniqInt(t *testing.T) {
 	t.Log(hsh)
 }
 
-//go test -run="none" -bench="Bench*"
+// go test -run="none" -bench="Bench*"
 func BenchmarkStrCheck(b *testing.B) {
 	str := "君不见，黄河之水天上来，奔流到海不复回。君不见，高堂明镜悲白发，朝如青丝幕成雪"
 	for i := 0; i < b.N; i++ {

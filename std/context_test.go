@@ -35,11 +35,11 @@ func TestCtxDeadline(t *testing.T) {
 func TestContextCycleWithTimeout(t *testing.T) {
 	ctx := context.Background()
 	ctx, _ = context.WithTimeout(ctx, 2*time.Second)
-	time.Sleep(1*time.Second)
+	time.Sleep(1 * time.Second)
 	ctx, _ = context.WithTimeout(ctx, 3*time.Second)
-	time.Sleep(2*time.Second)
+	time.Sleep(2 * time.Second)
 	select {
-	case <- ctx.Done():
+	case <-ctx.Done():
 		t.Log("WithTimeout不会覆盖之前设置的超时时间")
 	default:
 		t.Log("WithTimeout会覆盖之前设置的超时时间")
@@ -50,11 +50,11 @@ func TestContextCycleWithTimeout(t *testing.T) {
 func TestContextWithDeadline(t *testing.T) {
 	ctx := context.Background()
 	ctx, _ = context.WithDeadline(ctx, time.Now().Add(2*time.Second))
-	time.Sleep(1*time.Second)
+	time.Sleep(1 * time.Second)
 	ctx, _ = context.WithDeadline(ctx, time.Now().Add(3*time.Second))
-	time.Sleep(2*time.Second)
+	time.Sleep(2 * time.Second)
 	select {
-	case <- ctx.Done():
+	case <-ctx.Done():
 		t.Log("WithDeadline不会覆盖之前设置的超时时间")
 	default:
 		t.Log("WithDeadline会覆盖之前设置的超时时间")

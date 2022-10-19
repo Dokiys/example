@@ -134,7 +134,7 @@ func (self *PlayerWs) startReceive() {
 					log.Printf("websocket关闭: %v", err)
 					return
 				} else {
-					time.Sleep(1*time.Second)
+					time.Sleep(1 * time.Second)
 					logrus.Errorf("主动接收玩家消息错误：%s", err.Error())
 				}
 			}

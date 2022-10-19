@@ -8,28 +8,27 @@ import (
 )
 
 func TestSearch(t *testing.T) {
-	slice := make([]int,0,10000)
-	for i:=0;i < 10000;i++{
-		if i == 555{
-			slice = append(slice,11111)
-		}else{
-			slice = append(slice,rand.Intn(10000))
+	slice := make([]int, 0, 10000)
+	for i := 0; i < 10000; i++ {
+		if i == 555 {
+			slice = append(slice, 11111)
+		} else {
+			slice = append(slice, rand.Intn(10000))
 		}
 	}
 
-	if _,err := Search2(slice,11111); err == nil{
+	if _, err := Search2(slice, 11111); err == nil {
 		t.Logf("Get!")
-	}else {
+	} else {
 		t.Fatal(err)
 	}
 }
 
-func Test1(t *testing.T){
-	ctx,cancel := context.WithCancel(context.Background())
-
+func Test1(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
 
 	go func(ctx context.Context) {
-		ctx = context.WithValue(ctx, 1,"a")
+		ctx = context.WithValue(ctx, 1, "a")
 		cancel()
 	}(ctx)
 

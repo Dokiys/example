@@ -11,16 +11,17 @@ func TestWg(t *testing.T) {
 	ch := make(chan struct{})
 	wg.Add(1)
 	go func() {
-		<- ch
-		wg.Wait()	// 1
+		<-ch
+		wg.Wait() // 1
 		t.Logf("123")
 	}()
 	go func() {
-		<- ch
-		wg.Done()	// 2
+		<-ch
+		wg.Done() // 2
 		wg.Add(1) // 3
 		t.Logf("321")
 	}()
 	close(ch)
-	for{}
+	for {
+	}
 }

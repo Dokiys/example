@@ -17,7 +17,7 @@ func TestRegexp(t *testing.T) {
 func TestRegexpOr(t *testing.T) {
 	r := regexp.MustCompile("[0-9]|\\(abc\\)")
 
-	t.Log(r.MatchString("(abc)")) //true
+	t.Log(r.MatchString("(abc)"))  //true
 	t.Log(r.FindString("abc123a")) //123
 }
 

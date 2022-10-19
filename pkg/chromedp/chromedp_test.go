@@ -68,7 +68,7 @@ func TestChromedp(t *testing.T) {
 	fmt.Print(nodes[0].Dump("  ", "  ", false))
 }
 
-func imageServer()  {
+func imageServer() {
 	h := `<!DOCTYPE HTML>
 <html>
 <body>
@@ -92,7 +92,7 @@ func imageServer()  {
 
 func TestFullScreenshot(t *testing.T) {
 	go imageServer()
-	time.Sleep(2*time.Second)
+	time.Sleep(2 * time.Second)
 	// create context
 	ctx, cancel := chromedp.NewContext(
 		context.Background(),
