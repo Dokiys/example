@@ -59,6 +59,7 @@ func generate(gen *protogen.Plugin, file *protogen.File) *protogen.GeneratedFile
 }
 
 func genErrorsReason(g *protogen.GeneratedFile, enum *protogen.Enum) bool {
+	// 从Enums中对的 option (errors.default_code) = 500 中获取默认code
 	defaultCode := proto.GetExtension(enum.Desc.Options(), errors.E_DefaultCode)
 	code := 0
 	if ok := defaultCode.(int32); ok != 0 {
@@ -69,6 +70,7 @@ func genErrorsReason(g *protogen.GeneratedFile, enum *protogen.Enum) bool {
 	}
 	var ew errorWrapper
 	for _, v := range enum.Values {
+		// 从每个enum值中获取 [(errors.code) = 400] 中的code
 		eCode := proto.GetExtension(v.Desc.Options(), errors.E_Code)
 		if ok := eCode.(int32); ok != 0 {
 			code = int(ok)
