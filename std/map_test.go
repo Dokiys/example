@@ -1,7 +1,9 @@
 package std
 
 import (
+	"fmt"
 	"testing"
+	"unsafe"
 )
 
 // TestMapDistinct 利用map去重
@@ -50,4 +52,26 @@ func TestMapOK(t *testing.T) {
 	t.Log("----------")
 	v3 := m[3]
 	t.Logf("m[2] value: %d", v3)
+}
+
+func TestLenMapByPointer(t *testing.T) {
+	m := make(map[int32]any, 2)
+	m[1] = "1"
+	m[2] = "2"
+
+	fmt.Println(len(m))
+	fmt.Printf("%p\n", &m)
+	// NOTE[Dokiy] 2022/11/9: ??为啥取不出来长度？
+	fmt.Println(*(*int)(unsafe.Pointer(&m)))
+}
+
+func TestLenChanByPointer(t *testing.T) {
+	c := make(chan struct{}, 2)
+	c <- struct{}{}
+	c <- struct{}{}
+
+	fmt.Println(len(c))
+	fmt.Printf("%p\n", &c)
+	// NOTE[Dokiy] 2022/11/9: ??为啥取不出来长度？
+	fmt.Println(*(*int)(unsafe.Pointer(&c)))
 }
