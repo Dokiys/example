@@ -1,2 +1,2 @@
-# code_example
+# example
 some example for code toolkit
