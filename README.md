@@ -1,2 +1,2 @@
-# go_test
-some test for go toolkit
+# code_example
+some example for code toolkit

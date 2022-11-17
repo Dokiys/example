@@ -1,0 +1,5 @@
+B='b'
+
+.PHONY: a
+a:
+	@echo "a"
