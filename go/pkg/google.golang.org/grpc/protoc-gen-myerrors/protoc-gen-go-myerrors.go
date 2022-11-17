@@ -12,6 +12,7 @@ const release = "v0.0.1"
 
 var version = flag.Bool("version", false, "print the version and exit")
 
+//go:generate go build -o ./bin/protoc-gen-go-myerrors
 func main() {
 	flag.Parse()
 	if *version {

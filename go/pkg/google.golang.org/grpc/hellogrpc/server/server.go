@@ -4,25 +4,27 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"google.golang.org/grpc"
-	"grpc/hellogrpc"
 	"log"
 	"net"
+
+	"google.golang.org/grpc"
+	"grpc/hellogrpc"
 )
 
 var addr = flag.String("addr", "localhost:50055", "http service address")
 
+//go:generate go build -o ../bin/server
 func main() {
 	flag.Parse()
 	var s *grpc.Server
 	// Create the TLS credentials
-	//{
+	// {
 	//	creds, err := credentials.NewServerTLSFromFile("../zchd.crt", "../ca.key")
 	//	if err != nil {
 	//		log.Fatalf("failed to new tls creds: %v", err)
 	//	}
 	//	s = grpc.NewServer(grpc.Creds(creds))
-	//}
+	// }
 	interceptor := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		// 前置处理
 		fmt.Printf("Before RPC handling. Info: %+v", info)
@@ -39,8 +41,8 @@ func main() {
 		hellogrpc.RegisterGreeterServer(s, &hellogrpc.Server{Addr: *addr})
 
 		// 注册服务
-		//addrM = make(map[string]string, 1)
-		//addrM[myAddrKey] = addr
+		// addrM = make(map[string]string, 1)
+		// addrM[myAddrKey] = addr
 	}
 
 	lis, err := net.Listen("tcp", *addr)
