@@ -1,0 +1,26 @@
+#!/bin/sh
+
+MAX_SIZE=$((1024 * 1024 * 1))
+FILES=$(git --no-pager diff --cached --name-status | awk '{print $2}')
+
+for FILE in $FILES; do
+  SIZE=$(ls -l $FILE | awk '{print $5}')
+
+  if [ $SIZE -gt $MAX_SIZE ]; then
+    ERR_FILES[${#ERR_FILES[@]}]=$FILE
+    continue
+  fi
+done
+
+if [ ${#ERR_FILES[@]} -eq 0 ]; then
+  exit 0
+fi
+
+# Regular Colors
+Red='\033[0;31m' # Red
+ERR="Exceed max size files:\n  (use \"git commit -no-verify -m 'COMMENT'\" to discard)"
+for E_FILE in $ERR_FILES; do
+  echo 1>&2 "${ERR}\n${Red}${E_FILE}"
+done
+
+exit 1
