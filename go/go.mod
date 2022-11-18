@@ -15,6 +15,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/xuri/excelize/v2 v2.5.0
 	go.etcd.io/etcd/client/v3 v3.5.4
+	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
