@@ -1,4 +1,4 @@
-package workspace
+package generics
 
 import (
 	"testing"
@@ -24,7 +24,7 @@ func TestGenerics(t *testing.T) {
 	t.Log(add(i1, i2))
 	t.Log(add(int1, int2))
 	t.Log(add(i32_1, i32_2))
-	//t.Log(add(i1, i32_2)) invalid
+	// t.Log(add(i1, i32_2)) invalid
 
 	var a A[int32]
 	t.Logf("a.N type: %T", a.n)
