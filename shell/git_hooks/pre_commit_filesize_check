@@ -1,7 +1,7 @@
 #!/bin/sh
 
 MAX_SIZE=$((1024 * 1024 * 1))
-FILES=$(git --no-pager diff --cached --name-status | awk '{print $2}')
+FILES=$(git --no-pager diff --cached --name-status | awk '$1=="M" || $1=="A" {print $2}')
 
 for FILE in $FILES; do
   SIZE=$(ls -l $FILE | awk '{print $5}')
