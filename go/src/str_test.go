@@ -144,6 +144,14 @@ func TestStringToUniqInt(t *testing.T) {
 	t.Log(hsh)
 }
 
+// TestStringPointer
+func TestStringPointer(t *testing.T) {
+	str := "君不见，黄河之水天上来，奔流到海不复回。君不见，高堂明镜悲白发，朝如青丝幕成雪"
+	s := &str
+	*s = "1"
+	t.Log(str)
+}
+
 // go test -run="none" -bench="Bench*"
 func BenchmarkStrCheck(b *testing.B) {
 	str := "君不见，黄河之水天上来，奔流到海不复回。君不见，高堂明镜悲白发，朝如青丝幕成雪"
