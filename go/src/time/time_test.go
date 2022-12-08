@@ -64,7 +64,9 @@ func TestTimeRound(t *testing.T) {
 
 		// Prints rounded d of all
 		// the items in an array
-		fmt.Printf("Rounded(%s) is:%s\n",
-			m, d.Round(m))
+		fmt.Printf("Rounded(%s) is:%s\n", m, d.Round(m))
+		// Down to a multiple of d
+		fmt.Printf("Truncate(%s) is:%s\n", m, d.Truncate(m))
+		fmt.Println("--")
 	}
 }

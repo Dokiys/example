@@ -6,6 +6,28 @@ import (
 	"unsafe"
 )
 
+func TestMapRange(t *testing.T) {
+	ids := map[int]string{}
+	ids[1] = "a"
+	ids[2] = "b"
+	for k := range ids {
+		t.Log(k)
+	}
+
+	for k, v := range ids {
+		t.Log(k, v)
+	}
+}
+
+func TestMapNilLength(t *testing.T) {
+	var a = make(map[int32][]string)
+	t.Log(len(a))
+	t.Log(len(a[1]))
+
+	a[1] = append(a[1], "a")
+	t.Log(a)
+}
+
 // TestMapDistinct 利用map去重
 func TestMapDistinct(t *testing.T) {
 	ids := []int{1, 2, 3, 4, 4, 3, 2, 1}
