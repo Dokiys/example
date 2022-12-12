@@ -4,3 +4,12 @@
 **/.DS_Store
 # Binaries for programs and plugins
 **/bin
+
+
+## Go
+# dlv debug file
+**/debug.test
+# go test cover file
+**/cover.out
+**/cover.html
+**/cover_total.out
