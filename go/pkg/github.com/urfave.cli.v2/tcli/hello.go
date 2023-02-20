@@ -2,6 +2,8 @@ package tcli
 
 import (
 	"fmt"
+
+	"github.com/urfave/cli/v2"
 )
 
 func NewHelloCmd() *cli.Command {

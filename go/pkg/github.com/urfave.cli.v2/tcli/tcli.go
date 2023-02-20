@@ -4,6 +4,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/urfave/cli/v2"
 )
 
 const VERSION = "v1.0.0"
