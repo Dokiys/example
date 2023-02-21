@@ -106,38 +106,41 @@ func toStringSlice(e []interface{}) []string {
 
 func contentsPrint(contents ...string) {
 	if len(contents) == 1 {
-		fmt.Println(contents[0])
+		splitLine(contents[0])
+
 		return
 	}
 
 	for i, c := range contents {
-		fmt.Printf("%d. %s\n", i+1, c)
+		splitLine(fmt.Sprintf("%d. %s\n", i+1, c))
 	}
 }
 
-// TODO[Dokiy] 2023/2/20:
 func splitLine(str string) {
 	var buf bytes.Buffer
 	var p int
-	var isQuote = true
+	var isQuote = false
 	var isNewline = false
 	for i, r := range str {
-		if (i+1)%30 == 0 {
-			isNewline = !isNewline
-		}
-		if isNewline && !isQuote {
-			buf.WriteString("\n")
+		if (i/3+1)%30 == 0 && !isNewline {
+			isNewline = true
 		}
 
 		if string(r) == "$" {
 			p = i
-			isQuote = !isQuote
+			isQuote = true
 		} else if string(r) == "}" {
-			buf.WriteString(str[p:i])
-			isQuote = !isQuote
-			continue
+			buf.WriteString(str[p : i+1])
+			isQuote = false
+		} else if !isQuote {
+			buf.WriteRune(r)
 		}
-		buf.WriteRune(r)
+
+		if !isQuote && isNewline {
+			buf.WriteString("\n")
+			isNewline = false
+		}
+
 	}
 
 	fmt.Println(buf.String())
