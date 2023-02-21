@@ -3,6 +3,8 @@ package src
 import (
 	"sort"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // TestSliceRange range两个参数遍历
@@ -73,4 +75,24 @@ func TestSliceSort(t *testing.T) {
 	})
 
 	t.Log(nums) // [1 1 2 2 3 3 4]
+}
+
+// Insert向 index 左边插入元素, index从0开始
+func insert[T any](arr []T, e T, index int) []T {
+	if index >= len(arr) {
+		panic("array.Insert index out of range")
+	}
+
+	r := make([]T, len(arr)+1)
+	copy(r[:index], arr[:index])
+	r[index] = e
+	copy(r[index+1:], arr[index:])
+
+	return r
+}
+
+func TestSliceInsert(t *testing.T) {
+	arr := []string{"1", "2", "3"}
+	arr = insert(arr, "a", 2)
+	assert.Equal(t, []string{"1", "2", "a", "3"}, arr)
 }
