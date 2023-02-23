@@ -353,7 +353,6 @@
         ws = new WebSocket(wsurl, [token]);
         //接收到消息时触发
         ws.onmessage = function (evt) {
-            console.log("Received Message: " + evt.data);
             handleMsg(evt.data)
         };
         //连接关闭时触发
@@ -589,7 +588,6 @@
                 app.showDiv = 'index'
                 break
         }
-        console.log(app)
     }
 
     alertMsg = (msg) => {
