@@ -3,11 +3,13 @@ package win3cards
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"sync"
 )
 
+// 底注基数，最终数额为[base*玩家数]
 const base = 1
 
 type RoundSession struct {

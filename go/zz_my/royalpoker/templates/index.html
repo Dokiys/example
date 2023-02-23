@@ -189,6 +189,7 @@
         313: '方片K',
         314: '方片A',
     }
+    const maxBetting = 10
     var token = localStorage.getItem('token');
     var app = new Vue({
         el: "#app",
@@ -458,8 +459,8 @@
             alert("必须要大于当前注码")
             return
         }
-        if (inbet * base > 10) {
-            alert("最大注码为10")
+        if (inbet * base > maxBetting) {
+            alert("最大注码为"+maxBetting)
             return
         }
 

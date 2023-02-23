@@ -4,13 +4,14 @@ import (
 	"embed"
 	"flag"
 	"fmt"
-	"github.com/dokiy/royalpoker/common"
-	"github.com/gin-gonic/gin"
-	"gopkg.in/yaml.v2"
 	"html/template"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/dokiy/royalpoker/common"
+	"github.com/gin-gonic/gin"
+	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -53,6 +54,7 @@ func init() {
 	}
 }
 
+// NOTE[Dokiy] 2023/2/23: 需要修改为可链接的ip地址
 var addr = flag.String("addr", "localhost:8080", "http service address")
 
 //go:embed templates
@@ -64,10 +66,10 @@ func main() {
 	r, handler := gin.Default(), NewHandler()
 	tmpl := template.Must(template.New("").ParseFS(FS, "templates/*.html"))
 	r.SetHTMLTemplate(tmpl)
-	//fe, _ := fs.Sub(FS, "static")
-	//r.StaticFS("templates/static", http.FS(fe))
+	// fe, _ := fs.Sub(FS, "static")
+	// r.StaticFS("templates/static", http.FS(fe))
 
-	//r.LoadHTMLGlob("templates/*.html")
+	// r.LoadHTMLGlob("templates/*.html")
 
 	r.GET("/", home)
 	r.POST("/login", handler.login)
