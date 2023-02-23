@@ -2,10 +2,11 @@ package win3cards
 
 import (
 	"context"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
+
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 const baseRound = 3
@@ -93,7 +94,6 @@ func (self *W3cSession) WaitReady(ctx context.Context) {
 		wg.Add(1)
 		go func(id int) {
 			for {
-				// TODO[Dokiy] 2022/1/27:
 				data, err := self.Receiver(ctx, id)
 				if err != nil {
 					logrus.Errorf("等待玩家准备时，接收操作错误：%s", err.Error())
@@ -128,7 +128,7 @@ func (self *W3cSession) Play(ctx context.Context, round int) (int, error) {
 		players[(i+j)%l] = id
 	}
 	// 发送位序
-	//self.BroadcastSeq(ctx, players)
+	// self.BroadcastSeq(ctx, players)
 
 	self.Poker.CutTheDeck()
 	winner, err := self.RoundSession.Run(ctx, self.Poker, players)

@@ -35,8 +35,6 @@ func NewList() *List {
 func (l *List) Add(es ...interface{}) {
 	// 添加元素，别忘了先定位到尾部节点
 	for _, e := range es {
-		// TODO[Dokiy] 2022/5/10: 类型断言
-		// value, ok := e.(*List)
 		if l.head == nil {
 			n := &Node{Val: e}
 			l.head = n

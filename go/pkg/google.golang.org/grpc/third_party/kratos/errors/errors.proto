@@ -20,7 +20,6 @@ extend google.protobuf.EnumOptions {
   int32 default_code = 1108;
 }
 
-// TODO[Dokiy] 2022/8/30: 添加not found
 extend google.protobuf.EnumValueOptions {
   int32 code = 1109;
 }
