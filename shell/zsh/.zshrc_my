@@ -1,0 +1,67 @@
+### To install this config
+# wget -qO ~/.zshrc_my  https://raw.githubusercontent.com/Dokiys/example/main/shell/zsh/.zshrc_my && echo "source ~/.zshrc_my" >> ~/.zshrc && . ~/.zshrc
+
+# Which plugins would you like to load?
+# Standard plugins can be found in $ZSH/plugins/
+# Custom plugins may be added to $ZSH_CUSTOM/plugins/
+# Example format: plugins=(rails git textmate ruby lighthouse)
+# Add wisely, as too many plugins slow down shell startup.
+plugins=(
+    "${plugins[@]}"
+    autojump
+    zsh-syntax-highlighting zsh-autosuggestions zsh-history-substring-search
+)
+source $ZSH/oh-my-zsh.sh
+
+# history-substring-search-up key bind
+bindkey '^P' history-substring-search-up
+bindkey '^N' history-substring-search-down
+
+# User configuration
+# ==================
+#
+# You may need to manually set your language environment
+export LANG=en_US.UTF-8
+
+# Alias
+alias gitnp="git --no-pager" # git without pager
+alias iterm="open -a iterm" # open Iterm2 with current(or special) path
+
+# brew app install
+# According config to install brew app while zsh is loaded
+brew_apps=(
+  the_silver_searcher   # ag
+)
+if ! command -v brew >/dev/null; then
+  echo 1>&2 "zshrc_my brew_apps: command not found: brew"
+else
+  for app in "${brew_apps[@]}"; do
+    if [ -z "$(brew list | grep $app)" ]; then
+      brew install $app
+      if [ $? -ne 0 ]; then
+        echo 1>&2 "zshrc_my brew_apps: brew install $app failed"
+      fi
+    fi
+  done
+fi
+
+# Functions
+# gnum generate every N..M num on each line
+function gnum() {
+  for ((i=$1; i <= $2; i++)) do
+    echo "$i"
+  done
+}
+# protofmt buf format ./*.proto files
+function protofmt() {
+  buf --version > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    echo 1>&2 "protofmt: command not found: buf"
+    echo 1>&2 "  (run: go install github.com/bufbuild/buf/cmd/buf@latest to install)";
+    return;
+  fi
+
+  find . -name "*.proto" | while IFS= read -r -d '' filename; do
+    buf format $filename -o $filename;
+  done
+}

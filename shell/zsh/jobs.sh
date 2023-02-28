@@ -11,7 +11,7 @@ function protofmt() {
     echo 1>&2 "  (run: go install github.com/bufbuild/buf/cmd/buf@latest to install)";
     return;
   fi
-  for filename in $(find . -name "*.proto"); do
+  find . -name "*.proto" | while IFS= read -r -d '' filename; do
     buf format $filename -o $filename;
   done
 }'
