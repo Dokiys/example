@@ -22,6 +22,10 @@ bindkey '^N' history-substring-search-down
 #
 # You may need to manually set your language environment
 export LANG=en_US.UTF-8
+#设置历史命令记录数
+export HISTSIZE=100000
+#记录历史文件大小
+export HISTFILESIZE=45000
 
 # Alias
 alias gitnp="git --no-pager" # git without pager
