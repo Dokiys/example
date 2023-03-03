@@ -18,27 +18,18 @@ func failOnError(err error, msg string) {
 
 func bodyFrom(args []string) string {
 	var s string
-	if (len(args) < 4) || os.Args[3] == "" {
+	if (len(args) < 2) || os.Args[2] == "" {
 		s = "hello"
 	} else {
-		s = strings.Join(args[3:], " ")
-	}
-	return s
-}
-func severityFrom(args []string) string {
-	var s string
-	if (len(args) < 3) || os.Args[2] == "" {
-		s = "info"
-	} else {
-		s = os.Args[2]
+		s = strings.Join(args[2:], " ")
 	}
 	return s
 }
 
-const RoutingExchangeName = "logs_routing"
+const PubSubExchangeName = "logs"
 
 func main() {
-	if len(os.Args) < 3 {
+	if len(os.Args) < 2 {
 		panic("invalid args!")
 	}
 
@@ -60,43 +51,42 @@ func Consumer() {
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		RoutingExchangeName, // name
-		"direct",            // type
-		true,                // durable
-		false,               // auto-deleted
-		false,               // internal
-		false,               // no-wait
-		nil,                 // arguments
+		PubSubExchangeName, // name
+		"fanout",           // type
+		true,               // durable
+		false,              // auto-deleted
+		false,              // internal
+		false,              // no-wait
+		nil,                // arguments
 	)
 	failOnError(err, "Failed to declare an exchange")
 
 	q, err := ch.QueueDeclare(
-		RoutingExchangeName+"-"+os.Args[2], // name
-		false,                              // durable
-		false,                              // delete when unused
-		true,                               // exclusive
-		false,                              // no-wait
-		nil,                                // arguments
+		PubSubExchangeName+"-"+os.Args[2], // name
+		false,                             // durable
+		false,                             // delete when unused
+		true,                              // exclusive
+		false,                             // no-wait
+		nil,                               // arguments
 	)
 	failOnError(err, "Failed to declare a queue")
 
-	log.Printf("Binding queue %s to exchange %s with routing key %s",
-		q.Name, RoutingExchangeName, os.Args[2])
 	err = ch.QueueBind(
-		q.Name,              // queue name
-		os.Args[2],          // routing key
-		RoutingExchangeName, // exchange
+		q.Name,             // queue name
+		"",                 // routing key
+		PubSubExchangeName, // exchange
 		false,
-		nil)
+		nil,
+	)
 	failOnError(err, "Failed to bind a queue")
 
 	msgs, err := ch.Consume(
 		q.Name, // queue
 		"",     // consumer
-		true,   // auto ack
+		true,   // auto-ack
 		false,  // exclusive
-		false,  // no local
-		false,  // no wait
+		false,  // no-local
+		false,  // no-wait
 		nil,    // args
 	)
 	failOnError(err, "Failed to register a consumer")
@@ -105,7 +95,7 @@ func Consumer() {
 
 	go func() {
 		for d := range msgs {
-			log.Printf(" [x] %s", d.Body)
+			log.Printf(" [x]%s: %s", os.Args[2], d.Body)
 		}
 	}()
 
@@ -123,13 +113,13 @@ func Publisher() {
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		RoutingExchangeName, // name
-		"direct",            // type
-		true,                // durable
-		false,               // auto-deleted
-		false,               // internal
-		false,               // no-wait
-		nil,                 // arguments
+		PubSubExchangeName, // name
+		"fanout",           // type
+		true,               // durable
+		false,              // auto-deleted
+		false,              // internal
+		false,              // no-wait
+		nil,                // arguments
 	)
 	failOnError(err, "Failed to declare an exchange")
 
@@ -138,10 +128,10 @@ func Publisher() {
 
 	body := bodyFrom(os.Args)
 	err = ch.PublishWithContext(ctx,
-		RoutingExchangeName,   // exchange
-		severityFrom(os.Args), // routing key
-		false,                 // mandatory
-		false,                 // immediate
+		"logs", // exchange
+		"",     // routing key
+		false,  // mandatory
+		false,  // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        []byte(body),

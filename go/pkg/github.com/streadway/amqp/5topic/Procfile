@@ -3,7 +3,7 @@
 # Run:
 # go install github.com/mattn/goreman && goreman start
 
-info: go run ./routing.go consumer info
-warning: go run ./routing.go consumer warning
-error: go run ./routing.go consumer error
-publisher: go run ./routing.go publisher error "Hello"
+*.orange.*: go run ./topic.go consumer *.orange.*
+*.*.rabbit: go run ./topic.go consumer *.*.rabbit
+lazy.#: go run ./topic.go consumer lazy.#
+publisher: go run ./topic.go publisher lazy.orange.rabbit "Hello"

@@ -35,7 +35,7 @@ func severityFrom(args []string) string {
 	return s
 }
 
-const RoutingExchangeName = "logs_routing"
+const TopicExchangeName = "logs_topic"
 
 func main() {
 	if len(os.Args) < 3 {
@@ -60,32 +60,32 @@ func Consumer() {
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		RoutingExchangeName, // name
-		"direct",            // type
-		true,                // durable
-		false,               // auto-deleted
-		false,               // internal
-		false,               // no-wait
-		nil,                 // arguments
+		TopicExchangeName, // name
+		"topic",           // type
+		true,              // durable
+		false,             // auto-deleted
+		false,             // internal
+		false,             // no-wait
+		nil,               // arguments
 	)
 	failOnError(err, "Failed to declare an exchange")
 
 	q, err := ch.QueueDeclare(
-		RoutingExchangeName+"-"+os.Args[2], // name
-		false,                              // durable
-		false,                              // delete when unused
-		true,                               // exclusive
-		false,                              // no-wait
-		nil,                                // arguments
+		TopicExchangeName+"-"+os.Args[2], // name
+		false,                            // durable
+		false,                            // delete when unused
+		true,                             // exclusive
+		false,                            // no-wait
+		nil,                              // arguments
 	)
 	failOnError(err, "Failed to declare a queue")
 
 	log.Printf("Binding queue %s to exchange %s with routing key %s",
-		q.Name, RoutingExchangeName, os.Args[2])
+		q.Name, TopicExchangeName, os.Args[2])
 	err = ch.QueueBind(
-		q.Name,              // queue name
-		os.Args[2],          // routing key
-		RoutingExchangeName, // exchange
+		q.Name,            // queue name
+		os.Args[2],        // routing key
+		TopicExchangeName, // exchange
 		false,
 		nil)
 	failOnError(err, "Failed to bind a queue")
@@ -123,13 +123,13 @@ func Publisher() {
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		RoutingExchangeName, // name
-		"direct",            // type
-		true,                // durable
-		false,               // auto-deleted
-		false,               // internal
-		false,               // no-wait
-		nil,                 // arguments
+		TopicExchangeName, // name
+		"topic",           // type
+		true,              // durable
+		false,             // auto-deleted
+		false,             // internal
+		false,             // no-wait
+		nil,               // arguments
 	)
 	failOnError(err, "Failed to declare an exchange")
 
@@ -138,7 +138,7 @@ func Publisher() {
 
 	body := bodyFrom(os.Args)
 	err = ch.PublishWithContext(ctx,
-		RoutingExchangeName,   // exchange
+		TopicExchangeName,     // exchange
 		severityFrom(os.Args), // routing key
 		false,                 // mandatory
 		false,                 // immediate

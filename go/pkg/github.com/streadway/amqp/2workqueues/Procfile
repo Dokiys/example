@@ -3,7 +3,5 @@
 # Run:
 # go install github.com/mattn/goreman && goreman start
 
-info: go run ./routing.go consumer info
-warning: go run ./routing.go consumer warning
-error: go run ./routing.go consumer error
-publisher: go run ./routing.go publisher error "Hello"
+consumer: go run ./work_queues.go consumer
+publisher: go run ./work_queues.go publisher "Hello......."
