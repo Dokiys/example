@@ -17,15 +17,20 @@ source $ZSH/oh-my-zsh.sh
 bindkey '^P' history-substring-search-up
 bindkey '^N' history-substring-search-down
 
-# User configuration
-# ==================
-#
+# ================== User Config  ==================
 # You may need to manually set your language environment
 export LANG=en_US.UTF-8
-#设置历史命令记录数
-export HISTSIZE=100000
-#记录历史文件大小
-export HISTFILESIZE=45000
+
+# history
+# 设置历史命令记录数  
+export HISTSIZE=100000 
+# 记录历史文件大小   
+export HISTFILESIZE=450000
+# 设置不保留重复的历史记录项
+setopt hist_ignore_all_dups
+# 保存历史记录时忽略多余的空格
+setopt hist_reduce_blanks
+# ================== End User Config ==================
 
 # Alias
 alias gitnp="git --no-pager" # git without pager
