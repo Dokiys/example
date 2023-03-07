@@ -1,5 +1,5 @@
 ### To install this config
-# wget -qO ~/.zshrc_my  https://raw.githubusercontent.com/Dokiys/example/main/shell/zsh/.zshrc_my && echo "source ~/.zshrc_my" >> ~/.zshrc && . ~/.zshrc
+# wget -qO ~/.zshrc_my  https://raw.githubusercontent.com/Dokiys/example/main/shell/config/.zshrc_my && echo "source ~/.zshrc_my" >> ~/.zshrc && . ~/.zshrc
 
 # Which plugins would you like to load?
 # Standard plugins can be found in $ZSH/plugins/
