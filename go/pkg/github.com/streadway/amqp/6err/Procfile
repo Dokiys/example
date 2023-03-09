@@ -1,0 +1,5 @@
+# Run:
+# go install github.com/mattn/goreman && goreman start
+
+consumer: go run ./worker/worker.go
+publisher: go run ./new_task/new_task.go "Hello."
