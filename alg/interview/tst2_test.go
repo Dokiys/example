@@ -1,16 +1,15 @@
 package interview
 
 import (
+	"errors"
 	"regexp"
 	"testing"
-
-	"github.com/pkg/errors"
 )
 
 func Conv(str string) (int, error) {
 	regp, err := regexp.Compile("[0-9]*")
 	if err != nil {
-		return 0, errors.Wrapf(err, "参数非法")
+		return 0, errors.New(err.Error() + "参数非法")
 	}
 	m := regp.Find([]byte(str))
 	if len(m) == 0 || len(m) != len(str) {
