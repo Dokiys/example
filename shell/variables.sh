@@ -2,7 +2,8 @@
 
 ## basic
 PRICE_PER_APPLE=5
-MyFirstLetters=ABC
+MyFirstLetters="ABC"
+MySecondLetters=${MySecondLetters:-"DEF"}
 single_quote='Hello        world!'		# Won't interpolate anything.
 double_quote="Hello   $MyFirstLetters     world!"		# Will interpolate.
 escape_special_character="Hello   \$MyFirstLetters     world!"		# Use backslash.
@@ -12,6 +13,7 @@ FileWithTimeStamp=/tmp/my-dir/file_$(/bin/date +%Y-%m-%d).txt
 
 echo $PRICE_PER_APPLE                 # => 5
 echo $MyFirstLetters                  # => ABC
+echo $MySecondLetters                 # => DEF
 echo $single_quote                    # => Hello world!
 echo $double_quote                    # => Hello ABC world!
 echo $escape_special_character        # => Hello $MyFirstLetters world!
