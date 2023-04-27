@@ -3,10 +3,12 @@ package src
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -72,4 +74,57 @@ func TestHttpSendPost(t *testing.T) {
 
 	data := Resp{}
 	assert.NoError(t, json.Unmarshal(body, &data))
+}
+
+func TestHttpStream(t *testing.T) {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(`<!DOCTYPE html>
+<html>
+<head>
+	<title>Fetch API Example</title>
+	<meta charset="utf-8">
+</head>
+<body onload="fetchData()">
+	<div id="result"></div>
+	<script>
+		function fetchData() {
+			fetch('http://localhost:8080/stream', {
+                method: 'POST'
+            })
+			.then(response => {
+                const encoding = response.headers.get('Content-Encoding');
+	            const reader = encoding === 'gzip' ? response.body.pipeThrough(new window['zlib'].Gunzip()) : response.body.getReader();
+				readData(reader);
+			});
+		}
+
+		function readData(reader) {
+			reader.read().then(result => {
+				if (result.done) {
+					return;
+				}
+            const decoder = new TextDecoder('utf-8');
+		    const data = decoder.decode(result.value);
+                var resultDiv = document.getElementById("result");
+                resultDiv.style.whiteSpace = 'pre-wrap';        
+                resultDiv.textContent += data;
+				readData(reader);
+			});
+		}
+	</script>
+</body>
+</html>`))
+		w.(http.Flusher).Flush()
+	})
+	http.HandleFunc("/stream", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Transfer-Encoding", "chunked")
+		for i := 0; i < 10; i++ {
+			fmt.Fprintf(w, "data: %s\n", strconv.Itoa(i))
+			w.(http.Flusher).Flush()
+			time.Sleep(1 * time.Second)
+		}
+	})
+	http.ListenAndServe(":8080", nil)
 }
