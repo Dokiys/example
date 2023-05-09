@@ -2,14 +2,17 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"runtime"
 	"runtime/pprof"
+	"strconv"
 )
 
 func fib(n int) int {
 	if n <= 1 {
-		return 1
+		return n
 	}
 
 	return fib(n-1) + fib(n-2)
@@ -20,6 +23,8 @@ func main() {
 		PprofCup()
 	} else if os.Args[1] == "heap" {
 		PprofHeap()
+	} else if os.Args[1] == "http" {
+		PprofHttp()
 	}
 }
 
@@ -68,4 +73,18 @@ func PprofHeap() {
 	if err := pprof.WriteHeapProfile(f); err != nil {
 		fmt.Printf("could not write heap profile: %s", err)
 	}
+}
+
+func PprofHttp() {
+	http.HandleFunc("/fib", func(w http.ResponseWriter, r *http.Request) {
+		n := r.URL.Query().Get("n")
+		i, _ := strconv.Atoi(n)
+		w.Write([]byte(fmt.Sprintf("fib(%d)=%d\n", i, fib(i))))
+	})
+	http.HandleFunc("/fib2", func(w http.ResponseWriter, r *http.Request) {
+		n := r.URL.Query().Get("n")
+		i, _ := strconv.Atoi(n)
+		w.Write([]byte(fmt.Sprintf("fib2(%d)=%d\n", i, fib2(i))))
+	})
+	http.ListenAndServe(":8080", nil)
 }
