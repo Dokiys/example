@@ -26,5 +26,5 @@ func TestDeferReturn(t *testing.T) {
 		}
 		return nil
 	}
-	fn()
+	_ = fn()
 }
