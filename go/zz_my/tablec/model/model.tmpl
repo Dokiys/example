@@ -1,0 +1,24 @@
+package {{.PkgName}}
+
+{{ if gt (len $.Imports) 0 }}
+import (
+    {{- range $.Imports }}
+    "{{.}}"
+    {{- end }}
+)
+{{ end }}
+
+// {{$.TableComment}}
+type {{$.ModelName}} struct {
+{{- range $.Columns }}
+	{{.CamelName}} {{.MappingType}} `json:"{{.ColumnName}}" db:"{{.ColumnName}}"` // {{.ColumnComment}}
+{{- end }}
+}
+
+func ({{$.ReceiverName}} *{{$.ModelName}}) TableName() string {
+	return "{{$.TableName}}"
+}
+
+func ({{$.ReceiverName}} *{{$.ModelName}}) PK() string {
+	return "{{$.PK}}"
+}
