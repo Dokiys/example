@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/Dokiys/go_test/go/zz_my/fly/conf"
+	"github.com/Dokiys/go_test/go/zz_my/fly/server/two"
 	"github.com/urfave/cli/v2"
 )
 
@@ -14,8 +13,8 @@ func NewTwoCmd(conf *conf.Config) TwoCmd {
 		Name:  "two",
 		Usage: "./app two",
 		Action: func(c *cli.Context) error {
-			fmt.Print(conf.Two)
-			return nil
+			twoSvc := two.NewTwo(conf)
+			return twoSvc.Run()
 		},
 	}
 }

@@ -1,19 +1,27 @@
-package cmd
+package temp
 
 import (
 	"reflect"
 
-	"github.com/Dokiys/go_test/go/zz_my/fly/cmd/temp"
 	"github.com/urfave/cli/v2"
 )
 
-type Commands struct {
-	OneCmd  OneCmd
-	TwoCmd  TwoCmd
-	TempCmd temp.TempCmd
+type Temp struct {
+	SubOneCmd SubOneCmd
+	SubTwoCmd SubTwoCmd
 }
 
-func NewCommands(cmd *Commands) cli.Commands {
+type TempCmd *cli.Command
+
+func NewTempCmd(temp *Temp) TempCmd {
+	return &cli.Command{
+		Name:        "temp",
+		Usage:       "./app temp",
+		Subcommands: newSubCommands(temp),
+	}
+}
+
+func newSubCommands(cmd *Temp) cli.Commands {
 	var cmds cli.Commands
 	v := reflect.Indirect(reflect.ValueOf(cmd))
 	ct := reflect.TypeOf(&cli.Command{})
