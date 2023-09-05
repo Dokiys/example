@@ -3,7 +3,7 @@ package one
 import (
 	"fmt"
 
-	"github.com/Dokiys/go_test/go/zz_my/fly/conf"
+	"github.com/Dokiys/go_test/go/zz_my/fly/demo/conf"
 )
 
 type One struct {

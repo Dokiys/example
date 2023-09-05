@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"testing"
+
+	"github.com/pkg/errors"
 )
 
 type MyErr struct{ msg string }
@@ -15,8 +16,8 @@ type Temporary interface{ IsTemporary() bool }
 
 func IsTemporary(err error) bool {
 	// v1
-	//te, ok := err.(Temporary)
-	//return ok && te.IsTemporary()
+	// te, ok := err.(Temporary)
+	// return ok && te.IsTemporary()
 
 	// v2
 	var t Temporary
@@ -29,7 +30,7 @@ func doSomething() error { return MyErr{msg: "my err"} }
 func TestRaiseErr(t *testing.T) {
 	err := doSomething()
 	if err != nil {
-		//return fmt.Errorf("call doSomething() Err: %s", err.Error())
+		// return fmt.Errorf("call doSomething() Err: %s", err.Error())
 		e := errors.New(fmt.Sprintf("call doSomething() Err: %s\n\t", err.Error()))
 		t.Log(e)
 	}
