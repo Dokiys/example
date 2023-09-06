@@ -11,26 +11,24 @@ func TestRenderModelTemp(t *testing.T) {
 	t.Run("测试渲染模版", func(t *testing.T) {
 		buf := &bytes.Buffer{}
 		table := &basic.Table{
-			TableName: "people",
-			PK:        "id",
-			// TODO[Dokiy] 2023/8/3: 验证是否需要转移
-			TableComment: "测试表model渲染\\n 123",
+			TableName:    pointVar("people"),
+			PK:           pointVar("id"),
+			TableComment: pointVar("测试表model渲染\\n 123"),
 		}
-		// TODO[Dokiy] 2023/8/3: 补全
 		cols := []*basic.Column{
 			{
-				ColumnName:      "id",
-				OrdinalPosition: 1,
-				DataType:        "int",
-				ColumnType:      "int unsigned",
-				ColumnComment:   "ID",
+				ColumnName:      pointVar("id"),
+				OrdinalPosition: pointVar(1),
+				DataType:        pointVar("int"),
+				ColumnType:      pointVar("int unsigned"),
+				ColumnComment:   pointVar("ID"),
 			}, {
-				ColumnName:      "name",
-				OrdinalPosition: 2,
-				DataType:        "varchar",
-				ColumnType:      "varchar(255)",
-				ColumnComment:   "姓名",
-				SrsId:           0,
+				ColumnName:      pointVar("name"),
+				OrdinalPosition: pointVar(2),
+				DataType:        pointVar("varchar"),
+				ColumnType:      pointVar("varchar(255)"),
+				ColumnComment:   pointVar("姓名"),
+				SrsId:           pointVar(0),
 			},
 		}
 		data := NewModel(table, cols, "module")
@@ -41,4 +39,13 @@ func TestRenderModelTemp(t *testing.T) {
 
 		t.Log(buf.String())
 	})
+}
+
+func pointVar[T comparable](t T) *T {
+	var zero T
+	if t == zero {
+		return &zero
+	}
+
+	return &t
 }
