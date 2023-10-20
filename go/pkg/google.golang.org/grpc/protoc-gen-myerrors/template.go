@@ -8,33 +8,33 @@ import (
 var errorsTemplate = `
 {{ range .Errors }}
 
-{{ if .HasComment }}{{ .Comment }}{{ end -}}
+{{ if .HasComment }}{{ .ColumnComment }}{{ end -}}
 func Is{{.CamelValue}}(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == {{ .Name }}_{{ .Value }}.String() && e.Code == {{ .HTTPCode }} 
+	return e.Reason == {{ .TableName }}_{{ .Value }}.String() && e.Code == {{ .HTTPCode }} 
 }
 {{- end }}
 
 {{ range .Errors }}
 
-{{ if .HasComment }}{{ .Comment }}{{ end -}}
+{{ if .HasComment }}{{ .ColumnComment }}{{ end -}}
 func Err{{ .CamelValue }}(format string, args ...interface{}) *errors.Error {
-	 return errors.New({{ .HTTPCode }}, {{ .Name }}_{{ .Value }}.String(), fmt.Sprintf(format, args...))
+	 return errors.New({{ .HTTPCode }}, {{ .TableName }}_{{ .Value }}.String(), fmt.Sprintf(format, args...))
 }
 {{- end }}
 
 {{ range .Errors }}
-{{ if .HasComment }}{{ .Comment }}{{ end -}}
+{{ if .HasComment }}{{ .ColumnComment }}{{ end -}}
 func Err{{ .CamelValue }}WithMeta(err error, msg string) *errors.Error {
 	return Err{{ .CamelValue }}(msg).WithMetadata(locationErrMeta(err))
 }
 {{- end }}
 
 {{ range .Errors }}
-{{ if .HasComment }}{{ .Comment }}{{ end -}}
+{{ if .HasComment }}{{ .ColumnComment }}{{ end -}}
 func TryErr{{ .CamelValue }}Wrap(err error, msg string) *errors.Error {
 	if e, ok := err.(*errors.Error); !ok {
 		return Err{{ .CamelValue }}(msg).WithMetadata(locationErrMeta(err))

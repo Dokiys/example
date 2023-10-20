@@ -19,7 +19,7 @@ func TestTableWriter(t *testing.T) {
 	writer := bufio.NewWriter(buf)
 
 	table := tablewriter.NewWriter(writer)
-	table.SetHeader([]string{"Name", "Sign", "Rating"})
+	table.SetHeader([]string{"TableName", "Sign", "Rating"})
 	// 合并第一列内容相同的单元格
 	table.SetAutoMergeCellsByColumnIndex([]int{0})
 	table.SetRowLine(true)

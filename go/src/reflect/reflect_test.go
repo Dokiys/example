@@ -17,23 +17,23 @@ func TestReflect(t *testing.T) {
 	var i interface{}
 	i = stu
 
-	// 获取变量的 reflect.Type
+	// 获取变量的 reflect.ColumnType
 	reType := reflect.TypeOf(i)
-	t.Logf("reflect.Type=%s\n", reType)
+	t.Logf("reflect.ColumnType=%s\n", reType)
 
 	// 获取变量的 reflect.Value
 	reVal := reflect.ValueOf(i)
 	t.Logf("reflect.Value=%s\n", reVal)
 
 	// 打印reVal类型，使用 reVal，打印Name 成员 失败。无法索引Name成员
-	// fmt.Printf("reVal=%T, name=%v",reVal,  reVal.Name)
+	// fmt.Printf("reVal=%T, name=%v",reVal,  reVal.TableName)
 	t.Logf("reVal=%T\n", reVal)
 
 	// 将 reVal 转成 interface
 	iVal := reVal.Interface()
 	t.Logf("iVal= %v, type= %T\n", iVal, iVal)
-	// iVal.Name 会报错Unresolved reference 'Name'
-	// fmt.Printf("iVal= %v, type= %T, name= %v\n", iVal, iVal, iVal.Name)
+	// iVal.TableName 会报错Unresolved reference 'TableName'
+	// fmt.Printf("iVal= %v, type= %T, name= %v\n", iVal, iVal, iVal.TableName)
 
 	// 将 interface 通过类型断言 转回成 Student
 	// stu:= iVal.(Student)

@@ -1,0 +1,14 @@
+# To prepare: install redis:
+#   docker run -it -d -p 6379:6379 --name my-redis redis:7
+# redis-cli connect:
+#   redis-cli -h localhost -p 6379 -a ""
+#
+# redis load scrip:
+#   > script load "local key = tostring(KEYS[1])\nlocal oldValue = tonumber(redis.call(\"GET\", key))\nlocal newValue = tonumber(ARGV[1])\nlocal expire = tonumber(ARGV[2])\t-- 任何情况下缓存都需要设置过期时间！\n\nif(newValue < 0)\nthen\n\treturn error(\"invalid value set\")\nend\n\n-- 如果不存在直接存\nif(oldValue == nil)\nthen\n    redis.call(\"SETEX\", key, expire, newValue)\n    return newValue\nend\n\n-- 存入最新值\nif(newValue > oldValue)\nthen\n    redis.call(\"SETEX\", key, expire, newValue)\n    return newValue\nelse\n    redis.call(\"SETEX\", key, expire, oldValue)\n\treturn oldValue\nend"
+#   > "04f066be70350d67818e0ccd35b40d974ab0e4e2"
+#   > script exists 04f066be70350d67818e0ccd35b40d974ab0e4e2
+#   1) (integer) 1
+#   > evalsha "04f066be70350d67818e0ccd35b40d974ab0e4e2" 1 version 10 2
+#   (integer) 2
+#   > evalsha "04f066be70350d67818e0ccd35b40d974ab0e4e2" 1 version 10 1
+#   (integer) 2

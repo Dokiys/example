@@ -1,8 +1,10 @@
 package src
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
+	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -82,4 +84,50 @@ func TestPointerCopy(t *testing.T) {
 	copy_a.b = &bb
 	assert.True(t, copy_a != a)
 	assert.True(t, copy_a.b != a.b)
+}
+
+func TestPointerMultiUnmarshall(t *testing.T) {
+
+	type A struct {
+		Name string
+	}
+
+	str := "{\"ColumnName\":\"123\"}"
+
+	f := func() (result *A) {
+		t.Log(result)
+		t.Log(&result)
+		var i interface{}
+		i = &result
+		t.Log(&i)
+
+		err := json.Unmarshal([]byte(str), &i)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		t.Log(**i.(**A))
+		return
+	}
+
+	f()
+}
+
+func TestPointer_Offset(t *testing.T) {
+	var a, b []int
+	a = []int{1, 2, 3}
+	b = a
+	a = a[:2]
+
+	fmt.Printf("%v\n", unsafe.Pointer(&a))
+	aLenPtr := uintptr(unsafe.Pointer(&a)) + uintptr(8)
+	aCapPtr := uintptr(unsafe.Pointer(&a)) + uintptr(16)
+	fmt.Printf("a len: %v\n", (*(*int)(unsafe.Pointer(aLenPtr))))
+	fmt.Printf("a cap: %v\n", (*(*int)(unsafe.Pointer(aCapPtr))))
+
+	fmt.Printf("%v\n", unsafe.Pointer(&b))
+	bLenPtr := uintptr(unsafe.Pointer(&b)) + uintptr(8)
+	bCapPtr := uintptr(unsafe.Pointer(&b)) + uintptr(16)
+	fmt.Printf("b len: %v\n", (*(*int)(unsafe.Pointer(bLenPtr))))
+	fmt.Printf("b cap: %v\n", (*(*int)(unsafe.Pointer(bCapPtr))))
 }

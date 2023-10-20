@@ -2,11 +2,12 @@ package win3cards
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"strconv"
 	"testing"
+
+	"github.com/olekukonko/tablewriter"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestWin3Cards(t *testing.T) {
@@ -49,7 +50,7 @@ func BenchmarkWin3Cards(b *testing.B) {
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Type", "Times", "Rate"})
+	table.SetHeader([]string{"ColumnType", "Times", "Rate"})
 	table.SetRowLine(true)
 	table.AppendBulk(data)
 	table.Render()
