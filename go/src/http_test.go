@@ -128,3 +128,22 @@ func TestHttpStream(t *testing.T) {
 	})
 	http.ListenAndServe(":8080", nil)
 }
+
+func TestHttpStreamResp(t *testing.T) {
+	s := http.NewServeMux()
+	s.HandleFunc("/stream", func(w http.ResponseWriter, request *http.Request) {
+		for i := 0; i < 10; i++ {
+			// time.Sleep(200 * time.Millisecond)
+			time.Sleep(time.Second)
+			w.Header().Set("access-control-allow-origin", "*")
+			fmt.Fprintf(w, "This is line %d\n", i+1)
+			w.(http.Flusher).Flush()
+		}
+	})
+
+	fmt.Println("Server listening on port 8080")
+	err := http.ListenAndServe(":8080", s)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
