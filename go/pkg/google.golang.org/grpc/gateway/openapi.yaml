@@ -49,6 +49,8 @@ components:
                     type: string
             description: The response message containing the greetings
         HelloRequest:
+            required:
+                - name
             type: object
             properties:
                 name:

@@ -3,6 +3,7 @@ syntax = "proto3";
 package helloworld;
 
 import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
 
 option go_package = "grpc/hellogrpc";
 
@@ -19,7 +20,7 @@ service Greeter {
 
 // The request message containing the user's name.
 message HelloRequest {
-  string name = 1;
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 // The response message containing the greetings

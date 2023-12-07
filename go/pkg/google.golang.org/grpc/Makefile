@@ -34,14 +34,15 @@ proto_grpc:
 .PHONY: proto_gateway
 OPENAPI_PATH=./gateway
 proto_gateway:
-	protoc --go_out=. --go_opt=paths=source_relative \
-		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
-		--grpc-gateway_out ./ \
+	protoc --proto_path=./third_party --proto_path=./gateway \
+		--go_out=./gateway --go_opt=paths=source_relative \
+		--go-grpc_out=./gateway --go-grpc_opt=paths=source_relative \
+		--grpc-gateway_out ./gateway \
         --grpc-gateway_opt logtostderr=true \
         --grpc-gateway_opt paths=source_relative \
         --grpc-gateway_opt generate_unbound_methods=true \
         --openapi_out=${OPENAPI_PATH} \
-        $(HELLO_PROTO_GRPC_FILES)
+        $(PROTO_GATEWAY_FILES)
 
 # protoc-gen-myerrors
 include ./protoc-gen-myerrors/Makefile
