@@ -3,9 +3,15 @@
 
 openapi: 3.0.3
 info:
-    title: Greeter API
-    description: The greeting service definition.
-    version: 0.0.1
+    title: Hello Work!
+    description: Greeter Server
+    contact:
+        name: Dokiy
+        url: https://github.com/Dokiys
+        email: '-'
+    license:
+        name: MIT License
+    version: v0.0.1
 paths:
     /v1/say_hello:
         post:
@@ -26,6 +32,31 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/HelloReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/say_hi:
+        post:
+            tags:
+                - Greeter
+            description: Sends a greeting
+            operationId: Greeter_SayHi
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/HiRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/HiReply'
                 default:
                     description: Default error response
                     content:
@@ -56,6 +87,23 @@ components:
                 name:
                     type: string
             description: The request message containing the user's name.
+        HiReply:
+            type: object
+            properties:
+                message:
+                    title: this is an overriden field schema title
+                    maxLength: 255
+                    type: string
+            description: The response message containing the greetings
+        HiRequest:
+            title: This is an overridden HiRequest schema title
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    type: string
+            description: The request message containing the user's name.
         Status:
             type: object
             properties:
@@ -72,5 +120,9 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufAny'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+    securitySchemes:
+        BasicAuth:
+            type: http
+            scheme: basic
 tags:
     - name: Greeter
