@@ -21,18 +21,21 @@ func TestLossOfPrecision(t *testing.T) {
 	fmt.Println(num2 * 3) // 0.30000000000000004
 
 	var num3 float64 = 1.16
-	fmt.Println(num3 * 100) // 115.99999999999999
-	fmt.Println(1.0 / 6.0)  // 0.16666666666666666
-	fmt.Println(2.0 / 3.0)  // 0.6666666666666666
+	fmt.Println(num3 * 100)  // 115.99999999999999
+	fmt.Println(100.0 / 6.0) // 16.666666666666668
+	fmt.Println(200.0 / 3.0) // 66.66666666666667
 
 	var num4 float64 = 115.99999999999999
 	fmt.Println(num4 / 100) // 1.16
 }
 
-// 所以最终计算结果为int类型的时候，务必需要使用 math.Round 来获取最终值。
+// 所以设计金额的浮点数计算，务必将该金额转换成最小单位的int类型数值（比如元需要分*100）
+// 然后使用 math.Round 来获取最终值。
 func TestPrecision(t *testing.T) {
 	var numRound float64 = 1.16
 	fmt.Println(math.Round(numRound * 100)) // 116
+	fmt.Println(math.Round(100.0 / 6.0))    // 18
+	fmt.Println(math.Round(200.0 / 6.0))    // 33
 
 	var numInt int = 1
 	fmt.Println(float64(numInt) / 10) // 0.1
@@ -45,8 +48,8 @@ func TestPrecision(t *testing.T) {
 	fmt.Printf("%.2f\n", f) // 1.20
 }
 
-// SubDivided 减除法
-func SubDivided(amount, count int) []int {
+// subDivided 减除法
+func subDivided(amount, count int) []int {
 	if count == 1 {
 		return []int{amount}
 	}
@@ -63,8 +66,8 @@ func SubDivided(amount, count int) []int {
 }
 
 func TestSubDivided(t *testing.T) {
-	t.Log(SubDivided(8, 3))  // []int{2, 3, 3}
-	t.Log(SubDivided(9, 3))  // []int{3, 3, 3}
-	t.Log(SubDivided(10, 3)) // []int{3, 3, 4}
-	t.Log(SubDivided(11, 3)) // []int{3, 4, 4}
+	t.Log(subDivided(8, 3))  // []int{2, 3, 3}
+	t.Log(subDivided(9, 3))  // []int{3, 3, 3}
+	t.Log(subDivided(10, 3)) // []int{3, 3, 4}
+	t.Log(subDivided(11, 3)) // []int{3, 4, 4}
 }
