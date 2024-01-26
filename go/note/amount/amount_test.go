@@ -29,13 +29,13 @@ func TestLossOfPrecision(t *testing.T) {
 	fmt.Println(num4 / 100) // 1.16
 }
 
-// 所以设计金额的浮点数计算，务必将该金额转换成最小单位的int类型数值（比如元需要分*100）
+// 所以涉及金额的浮点数计算，务必将该金额转换成最小单位的int类型数值（比如元需要分*100）
 // 然后使用 math.Round 来获取最终值。
 func TestPrecision(t *testing.T) {
-	var numRound float64 = 1.16
-	fmt.Println(math.Round(numRound * 100)) // 116
-	fmt.Println(math.Round(100.0 / 6.0))    // 18
-	fmt.Println(math.Round(200.0 / 6.0))    // 33
+	var numRound float64
+	numRound = numRound + 0.2
+	numRound = numRound + 0.1
+	fmt.Println(math.Round(numRound*100) / 100)
 
 	var numInt int = 1
 	fmt.Println(float64(numInt) / 10) // 0.1
