@@ -31,3 +31,10 @@ message Person {
 message AddressBook {
   repeated Person people = 1;
 }
+
+message OneOf {
+  oneof testOneOf {
+    int32 i = 101;
+    string s = 102;
+  }
+}

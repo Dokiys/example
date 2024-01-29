@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protodesc"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -31,6 +32,23 @@ func TestHelloProto(t *testing.T) {
 
 	bookIn := &AddressBook{}
 	assert.NoError(t, proto.Unmarshal(data, bookIn))
+}
+
+func TestHelloProtoOneOf(t *testing.T) {
+	var oneOfInt = &OneOf{
+		TestOneOf: &OneOf_I{1},
+	}
+	marshalInt, _ := protojson.Marshal(oneOfInt)
+	assert.Equal(t, `{"i":1}`, string(marshalInt))
+
+	var oneOfString = &OneOf{
+		TestOneOf: &OneOf_S{"a"},
+	}
+	marshalString, _ := protojson.Marshal(oneOfString)
+	assert.Equal(t, `{"s":"a"}`, string(marshalString))
+
+	i, _ := oneOfInt.GetTestOneOf().(*OneOf_I)
+	assert.Equal(t, 1, int(i.I))
 }
 
 func TestHelloProtoReflect(t *testing.T) {

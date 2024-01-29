@@ -15,13 +15,13 @@ PROTO_GATEWAY_FILES=$(shell find ./gateway/* -name *.proto)
 proto:
 	protoc --proto_path=. \
 		--descriptor_set_out=helloproto/descriptor.desc --go_out=../ \
-		$(PROTO_FILES)
+		$(HELLO_PROTO_FILES)
 
 .PHONY: gofast_proto
 gofast_proto:
 	protoc --proto_path=. \
 		--gofast_out=Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types:../ \
-		$(PROTO_FILES)
+		$(HELLO_PROTO_FILES)
 
 # GRPC
 .PHONY: proto_grpc
