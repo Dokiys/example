@@ -3,8 +3,11 @@ package middleware
 import (
 	"fmt"
 	"net/http"
+	"runtime"
 	"testing"
 	"time"
+
+	"golang.org/x/time/rate"
 )
 
 type ServerMiddleware func(http.Handler) http.Handler
@@ -46,18 +49,97 @@ func NewServerLogMiddleware() ServerMiddleware {
 		})
 	}
 }
+func NewServerRecoverMiddleware() ServerMiddleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer func() {
+				if rec := recover(); rec != nil {
+					fmt.Println(rec)
+					var stackInfo = make([]byte, 1<<16) // 64k
+					idx := runtime.Stack(stackInfo, false)
+					fmt.Println(string(stackInfo[0:idx]))
+				}
+			}()
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+func NewServerCorsMiddleware() ServerMiddleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Set CORS headers for all responses
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+
+			// Handle pre-flight OPTIONS request
+			if r.Method == http.MethodOptions {
+				// Include other necessary headers for pre-flight response
+				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS")
+				w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Length, Content-Type")
+				w.Header().Set("Access-Control-Max-Age", "86400") // Cache pre-flight response for 24 hours
+
+				// Respond with HTTP 204 No Content status
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+func NewServerLimiterMiddleware() ServerMiddleware {
+	var limit = rate.NewLimiter(rate.Every(time.Second), 1)
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if limit.Allow() {
+				next.ServeHTTP(w, r)
+			}
+			w.WriteHeader(http.StatusNotAcceptable)
+		})
+	}
+}
 func TestHttpServerMiddleware(t *testing.T) {
 	r := NewRouter()
+	r.Use(NewServerRecoverMiddleware())
 	r.Use(NewServerLogMiddleware())
+	r.Use(NewServerCorsMiddleware())
+	r.Use(NewServerLimiterMiddleware())
 	r.Add("/hello", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello Work!"))
 		// }), traceServerMiddleWare())
+	}))
+	r.Add("/panic", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		panic("test recover middleware")
 	}))
 
 	s := http.NewServeMux()
 	for pattern, handler := range r.mux {
 		s.Handle(pattern, handler)
 	}
+	fmt.Println("Server listening on port 8080")
+	err := http.ListenAndServe(":8080", s)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+func TestHttpServerMiddleware2(t *testing.T) {
+	s := http.NewServeMux()
+	s.Handle("/hello", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set CORS headers for all responses
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
+		// Handle pre-flight OPTIONS request
+		if r.Method == http.MethodOptions {
+			// Include other necessary headers for pre-flight response
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Length, Content-Type")
+			w.Header().Set("Access-Control-Max-Age", "86400") // Cache pre-flight response for 24 hours
+
+			// Respond with HTTP 204 No Content status
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		w.Write([]byte("Hello Work!"))
+	}))
+
 	fmt.Println("Server listening on port 8080")
 	err := http.ListenAndServe(":8080", s)
 	if err != nil {
