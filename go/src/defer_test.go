@@ -3,6 +3,8 @@ package src
 import (
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDefer(t *testing.T) {
@@ -27,4 +29,18 @@ func TestDeferReturn(t *testing.T) {
 		return nil
 	}
 	_ = fn()
+}
+
+func TestDeferClosure(t *testing.T) {
+	assert.Equal(t, closureErr().Error(), "test")
+}
+
+func closureErr() (err error) {
+	fn := func(err error) {
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}
+	defer func() { fn(err) }()
+	return fmt.Errorf("test")
 }

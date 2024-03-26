@@ -1,0 +1,117 @@
+@startuml
+title Sequence Diagram
+' [声明参与者](https://plantuml.com/zh/sequence-diagram#5d2ed256d73a7298)
+actor       Actor       as Foo1 #red
+collections Collections as Foo2 #99FF99
+box "填充"
+database    Database    as Foo3 #blue
+entity      Entity      as Foo4
+end box
+control     Control     as Foo5
+boundary    Boundary    as Foo6
+queue       Queue       as Foo7
+participant Participant as Foo
+
+Foo1 -> Foo1 : To actor
+Foo1 -> Foo2 : To boundary
+Foo1 -> Foo3 : To control
+Foo1 -> Foo4 : To entity
+Foo1 -> Foo5 : To database
+Foo1 -> Foo6 : To collections
+Foo1 -> Foo7 : To queue
+Foo1 -> Foo  : To participant
+
+
+
+
+' 把一张图分割成多张。
+newpage
+' [对消息序列编号](https://plantuml.com/zh/sequence-diagram#ce3f7eb577ad5f4d)
+' 自动从10开始设置箭头序列
+autonumber 1
+' [改变箭头样式](https://plantuml.com/zh/sequence-diagram#efeda651e89e596c)
+Foo1 -[#red]>x Foo2
+Foo1 -[#blue]> Foo2
+Foo1 -[#99ff99]>> Foo2
+Foo1 -\ Foo2
+Foo1 \\- Foo2
+Foo1 //-- Foo2
+Foo1 ->o Foo2
+Foo1 o\\-- Foo2
+Foo1 <-> Foo2
+Foo1 <->o Foo2
+autonumber stop
+
+
+
+
+
+
+newpage
+' [组合消息](https://plantuml.com/zh/sequence-diagram#425ba4350c02142c)
+Foo1 -> Foo2: 认证请求
+alt 成功情况
+' ...表示延迟
+    ...
+    Foo2 -> Foo1: 认证接受
+else 某种失败情况
+    Foo2 -> Foo1: 认证失败
+    group 我自己的标签[我自己的次级标签]
+    Foo1 -> Foo3 : 开始记录攻击日志
+        loop 1000次
+            Foo1 -> Foo2: DNS 攻击
+        end
+    Foo1 -> Foo3 : 结束记录攻击日志
+    end
+else 另一种失败
+   Foo2 -> Foo1: 请重复
+end
+
+
+
+
+
+newpage
+' [生命线的激活与撤销](https://plantuml.com/zh/sequence-diagram#5cc0040514e70f7b)
+Foo1 -> Foo2: DoWork
+activate Foo2 #red
+
+Foo2 -> Foo3: << createRequest >>
+activate Foo3
+
+Foo3 -> Foo4: DoWork
+activate Foo4
+Foo4 --> Foo3: WorkDone
+destroy Foo4
+
+Foo3 --> Foo2: RequestCreated
+deactivate Foo3
+
+Foo2 -> Foo1: Done
+deactivate Foo2
+
+
+|||
+|||
+' 快捷语法
+' ++ 用于激活生命线，需要对应一个--或者return来结束该生命线
+
+Foo1 -> Foo2 ++ : hello
+Foo2 -> Foo2 ++ : self call
+Foo2 -> Foo3 ++  #005500 : hello
+Foo3 -> Foo4 ** : create
+Foo3 -> Foo2 -- : hello done
+return self call success
+Foo2 -> Foo4 !! : delete
+return success
+
+' 增加换行
+|||
+|||
+' 激活自动生命线，需要同时使用return
+autoactivate on
+Foo1 -> Foo2: DoWork
+return success
+
+
+@enduml
