@@ -2,13 +2,14 @@ package hellogrpc
 
 import (
 	"context"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"io"
 	"log"
 	"net"
 	"testing"
 	"time"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const addr = "localhost:50055"
@@ -50,13 +51,13 @@ func (s *server) SayMoreHello(stream Greeter_SayMoreHelloServer) error {
 func TestGrpcServer(t *testing.T) {
 	var s *grpc.Server
 	// Create the TLS credentials
-	//{
+	// {
 	//	creds, err := credentials.NewServerTLSFromFile("./hellogrpc/zchd.crt", "./hellogrpc/ca.key")
 	//	if err != nil {
 	//		log.Fatalf("failed to new tls creds: %v", err)
 	//	}
 	//	s = grpc.NewServer(grpc.Creds(creds))
-	//}
+	// }
 
 	// Create the insecure server
 	{
@@ -64,8 +65,8 @@ func TestGrpcServer(t *testing.T) {
 		RegisterGreeterServer(s, &Server{Addr: addr})
 
 		// 注册服务
-		//addrM = make(map[string]string, 1)
-		//addrM[myAddrKey] = addr
+		// addrM = make(map[string]string, 1)
+		// addrM[myAddrKey] = addr
 	}
 
 	lis, err := net.Listen("tcp", addr)
@@ -82,16 +83,16 @@ func TestGrpcServer(t *testing.T) {
 func TestGrpcClient(t *testing.T) {
 	var conn *grpc.ClientConn
 	var err error
-	//Set up a TLS connection to the server.
-	//{
+	// Set up a TLS connection to the server.
+	// {
 	//	creds, err := credentials.NewClientTLSFromFile("./hellogrpc/zchd.crt", "www.zchd.ltd")
 	//	if err != nil {
 	//		log.Fatalf("failed to new tls creds: %v", err)
 	//	}
 	//	conn, err = grpc.Dial(addr, grpc.WithTransportCredentials(creds))
-	//}
+	// }
 
-	//Set up a connection to the server.
+	// Set up a connection to the server.
 	{
 		conn, err = grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
@@ -113,7 +114,7 @@ func TestGrpcClient(t *testing.T) {
 }
 
 func TestGrpcStreamClient(t *testing.T) {
-	//Set up a connection to the server.
+	// Set up a connection to the server.
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("failed to Dial: %v", err)

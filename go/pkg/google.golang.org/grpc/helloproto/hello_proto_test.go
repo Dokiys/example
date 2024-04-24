@@ -5,6 +5,9 @@ import (
 	"log"
 	"testing"
 
+	"github.com/go-kratos/kratos/v2/selector"
+	"github.com/go-kratos/kratos/v2/selector/filter"
+	"github.com/go-kratos/kratos/v2/selector/wrr"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -32,9 +35,14 @@ func TestHelloProto(t *testing.T) {
 
 	bookIn := &AddressBook{}
 	assert.NoError(t, proto.Unmarshal(data, bookIn))
+	selector.SetGlobalSelector(wrr.NewBuilder())
+	filter.Version()
 }
 
 func TestHelloProtoOneOf(t *testing.T) {
+	var oneOfNil = &OneOf{}
+	assert.Equal(t, nil, oneOfNil.GetTestOneOf())
+
 	var oneOfInt = &OneOf{
 		TestOneOf: &OneOf_I{1},
 	}

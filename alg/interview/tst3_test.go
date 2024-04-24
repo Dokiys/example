@@ -2,7 +2,6 @@ package interview
 
 import (
 	"fmt"
-	"sync"
 	"testing"
 )
 
@@ -92,12 +91,4 @@ func TestList(t *testing.T) {
 	// 加分项
 	l.Reverse()
 	l.Values(f) // 10, 9, 8, 7, 6, 5, 4, 3, 2, 1
-}
-
-func TestName(t *testing.T) {
-	var wg sync.Mutex
-
-	wg.Lock()
-	wg2 := wg
-	wg2.Unlock()
 }

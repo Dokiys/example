@@ -1,6 +1,7 @@
 package generics
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -28,4 +29,36 @@ func TestGenerics(t *testing.T) {
 
 	var a A[int32]
 	t.Logf("a.N type: %T", a.n)
+}
+
+func conv[S comparable, T any](tList []T, dbTag string) map[S]T {
+	var result = map[S]T{}
+	if len(tList) <= 0 {
+		return result
+	}
+
+	var idx = -1
+	for _, t := range tList {
+		tValue := reflect.ValueOf(t)
+		if idx == -1 {
+			if tValue.Type().Kind() != reflect.Struct {
+				panic("LocalCache getKey: provided value is not a struct")
+			}
+
+			for j := 0; j < tValue.NumField(); j++ {
+				if tag, ok := tValue.Type().Field(j).Tag.Lookup("db"); ok && tag == dbTag {
+					if tValue.Field(j).Type().AssignableTo(reflect.TypeOf(*new(S))) {
+						idx = j
+						break
+					} else {
+						panic("LocalCache getKey: cannot assign field to type S")
+					}
+				}
+			}
+			panic("LocalCache getKey: no field with db tag '" + dbTag + "' found")
+		}
+		result[tValue.Field(idx).Interface().(S)] = t
+	}
+
+	return result
 }

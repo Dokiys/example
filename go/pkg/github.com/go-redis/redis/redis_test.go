@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -85,7 +85,54 @@ end
 	assert.Equal(t, int64(2), result)
 
 	// 传值错误
+	v := []interface{}{"-1", expire}
+	_, err = client.EvalSha(ctx, sha, keys, v...).Result()
+	t.Log(err) // => ERR user_script:9: invalid value set script: 251f1bfe40b199887ccc90ee6d0e6ad6863e31e6, on @user_script:9.
+}
 
+// 尝试存入某数据，如果数据时间存在则
+func TestRedisReentrant(t *testing.T) {
+	ctx := context.Background()
+	client := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+	defer client.Close()
+
+	// SET mykey "hello" NX EX 10
+
+	src := `
+local key = tostring(KEYS[1])
+local oldValue = tostring(redis.call("GET", key))
+local newValue = tostring(ARGV[1])
+local expire = tonumber(ARGV[2])	-- 任何情况下缓存都需要设置过期时间！
+
+-- 如果存在则返回
+if(oldValue != nil)
+then
+	return oldValue
+else
+    return redis.call('SET', key, newValue, 'NX', 'EX', expire)
+end
+`
+	// 现将脚本加载到redis内存，如果给定的脚本已经在缓存里面了，那么不执行任何操作。
+	// 脚本可以在缓存中保留无限长的时间，直到执行 SCRIPT FLUSH 为止。
+	sha, err := redis.NewScript(src).Load(ctx, client).Result()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var keys, expire = []string{"version"}, 10
+
+	v2 := []interface{}{"2", expire}
+	result := client.EvalSha(ctx, sha, keys, v2...).Val()
+	assert.Equal(t, int64(2), result)
+
+	// 存入失败，依然取到最新值2
+	v1 := []interface{}{"1", expire}
+	result = client.EvalSha(ctx, sha, keys, v1...).Val()
+	assert.Equal(t, int64(2), result)
+
+	// 传值错误
 	v := []interface{}{"-1", expire}
 	_, err = client.EvalSha(ctx, sha, keys, v...).Result()
 	t.Log(err) // => ERR user_script:9: invalid value set script: 251f1bfe40b199887ccc90ee6d0e6ad6863e31e6, on @user_script:9.
