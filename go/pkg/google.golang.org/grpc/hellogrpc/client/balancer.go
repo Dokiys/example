@@ -11,16 +11,29 @@ Load Balancer
 const lbName = "mybalancer"
 
 func newMyBalanceBuilder() balancer.Builder {
-	return base.NewBalancerBuilder(lbName, &MyPickerBuilder{}, base.Config{HealthCheck: true})
+	return base.NewBalancerBuilder(lbName, &MyPickerBuilder{}, base.Config{HealthCheck: false})
 }
 
 // MyPickerBuilder Implement PickerBuilder
 type MyPickerBuilder struct{}
 
 func (m *MyPickerBuilder) Build(info base.PickerBuildInfo) balancer.Picker {
+	if len(info.ReadySCs) == 0 {
+		return base.NewErrPicker(balancer.ErrNoSubConnAvailable)
+	}
+
 	scs := make([]balancer.SubConn, 0, len(info.ReadySCs))
-	for sc := range info.ReadySCs {
-		scs = append(scs, sc)
+	for conn, sc := range info.ReadySCs {
+		weight := 1
+		if sc.Address.Attributes != nil {
+			val := sc.Address.Attributes.Value("weight")
+			if val != nil {
+				weight = val.(int)
+			}
+		}
+		for i := 0; i < weight; i++ {
+			scs = append(scs, conn)
+		}
 	}
 	return &MyPicker{subConns: scs}
 }

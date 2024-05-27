@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 // TestCtxDeadline 测试context超时处理
@@ -60,4 +61,15 @@ func TestContextWithDeadline(t *testing.T) {
 	default:
 		t.Log("WithDeadline会覆盖之前设置的超时时间")
 	}
+}
+
+func TestContextWithValue(t *testing.T) {
+	var key = struct{}{}
+	ctx := context.Background()
+	fn := func(ctx context.Context) {
+		ctx = context.WithValue(ctx, key, "123")
+	}
+	fn(ctx)
+	value := ctx.Value(key)
+	assert.Nil(t, value)
 }

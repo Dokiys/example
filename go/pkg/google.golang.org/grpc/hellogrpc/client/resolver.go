@@ -19,8 +19,9 @@ func (m *MyResolveBuilder) Build(target resolver.Target, cc resolver.ClientConn,
 	//	Addresses: []resolver.Address{{Addr: addrM[target.Endpoint]}},
 	// }
 	var state resolver.State
-	if target.Endpoint == "mytarget" {
+	if target.Endpoint() == "mytarget" {
 		state = resolver.State{
+			// Addresses: []resolver.Address{{Addr: "localhost:50055"}},
 			Addresses: []resolver.Address{{Addr: "localhost:50055"}, {Addr: "localhost:50056"}},
 		}
 	}

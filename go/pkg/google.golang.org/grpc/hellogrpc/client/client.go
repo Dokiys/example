@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"google.golang.org/grpc"
@@ -21,9 +22,8 @@ func main() {
 
 	conn, err = grpc.Dial("myresolve:///mytarget",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"mybalancer"}`),
-		// grpc.WithBalancerName("mybalancer"),			// same as above
-
+		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"loadBalancingPolicy":"%s"}`, lbName)),
+		// grpc.WithBalancerName("mybalancer"), // same as above
 	)
 	if err != nil {
 		log.Fatalf("failed to Dial: %v", err)
