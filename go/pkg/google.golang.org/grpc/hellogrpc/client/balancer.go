@@ -25,8 +25,8 @@ func (m *MyPickerBuilder) Build(info base.PickerBuildInfo) balancer.Picker {
 	scs := make([]balancer.SubConn, 0, len(info.ReadySCs))
 	for conn, sc := range info.ReadySCs {
 		weight := 1
-		if sc.Address.Attributes != nil {
-			val := sc.Address.Attributes.Value("weight")
+		if sc.Address.BalancerAttributes != nil {
+			val := sc.Address.BalancerAttributes.Value("weight")
 			if val != nil {
 				weight = val.(int)
 			}

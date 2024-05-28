@@ -8,22 +8,22 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/resolver"
 	"grpc/hellogrpc"
 )
 
 func init() {
-	resolver.Register(&MyResolveBuilder{})
+	// resolver.Register(&MyResolveBuilder{})
 	balancer.Register(newMyBalanceBuilder())
 }
 func main() {
+	var ctx = context.Background()
 	var conn *grpc.ClientConn
 	var err error
 
-	conn, err = grpc.Dial("myresolve:///mytarget",
+	conn, err = grpc.DialContext(ctx, "myresolve:///mytarget",
+		grpc.WithResolvers(&MyResolveBuilder{}),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"loadBalancingPolicy":"%s"}`, lbName)),
-		// grpc.WithBalancerName("mybalancer"), // same as above
 	)
 	if err != nil {
 		log.Fatalf("failed to Dial: %v", err)

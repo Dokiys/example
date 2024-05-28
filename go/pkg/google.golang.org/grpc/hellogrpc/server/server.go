@@ -27,10 +27,10 @@ func main() {
 	// }
 	interceptor := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		// 前置处理
-		fmt.Printf("Before RPC handling. Info: %+v", info)
+		fmt.Printf("Before RPC handling. Info: %+v\n", info)
 		// 调用方法
 		resp, err := handler(ctx, req)
-		fmt.Printf("After RPC handling. resp: %+v", resp)
+		fmt.Printf("After RPC handling. resp: %+v\n", resp)
 		// 后置处理
 		return resp, err
 	}
@@ -39,10 +39,6 @@ func main() {
 	{
 		s = grpc.NewServer(grpc.UnaryInterceptor(interceptor))
 		hellogrpc.RegisterGreeterServer(s, &hellogrpc.Server{Addr: *addr})
-
-		// 注册服务
-		// addrM = make(map[string]string, 1)
-		// addrM[myAddrKey] = addr
 	}
 
 	lis, err := net.Listen("tcp", *addr)
