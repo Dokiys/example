@@ -1,6 +1,7 @@
 package src
 
 import (
+	"slices"
 	"sort"
 	"testing"
 
@@ -67,14 +68,54 @@ func TestSliceExpend(t *testing.T) {
 	t.Logf("--------")
 }
 
-// TestSliceSort 切片排序
-func TestSliceSort(t *testing.T) {
+// TestSortSlice 切片排序
+func TestSortSlice(t *testing.T) {
 	nums := []int{1, 2, 3, 4, 3, 2, 1}
 	sort.Slice(nums, func(i, j int) bool {
 		return nums[i] < nums[j]
 	})
 
 	t.Log(nums) // [1 1 2 2 3 3 4]
+}
+
+// TestSortSlice 切片排序
+func TestSliceSort(t *testing.T) {
+	type A struct {
+		id   int
+		name string
+	}
+
+	aList := []A{{id: 1, name: "a1"}, {id: 3, name: "a3"}, {id: 2, name: "a2"}}
+	var expected string
+	for i := 0; i < 3; i++ {
+		// sort.Slice(aList, func(i, j int) bool {
+		// 	return aList[i].id == 1
+		// })
+		slices.SortStableFunc(aList, func(a, b A) int {
+			switch {
+			case a.id == 1 && b.id != 1:
+				return 1
+			case a.id == 1 && b.id == 1:
+				return 0
+			case a.id != 1 && b.id == 1:
+				return -1
+			case a.id != 1 && b.id != 1:
+				return 0
+			}
+			return 0
+		})
+		var actual string
+		for _, a := range aList {
+			actual += a.name
+		}
+		if expected == "" {
+			expected = actual
+		}
+		if expected != actual {
+			t.Errorf("expected: %s, actual: %s", expected, actual)
+		}
+		expected = actual
+	}
 }
 
 // Insert向 index 左边插入元素, index从0开始
