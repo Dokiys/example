@@ -70,3 +70,18 @@ func TestTimeRound(t *testing.T) {
 		fmt.Println("--")
 	}
 }
+
+func TestTimeTicker(t *testing.T) {
+	var flushInterval = time.NewTicker(1 * time.Second)
+	var forceFlushInterval = time.NewTicker(3 * time.Second)
+	for {
+		select {
+		case <-flushInterval.C:
+			t.Log("1")
+			forceFlushInterval.Reset(3 * time.Second)
+		case <-forceFlushInterval.C:
+			t.Log("3")
+			flushInterval.Reset(1 * time.Second)
+		}
+	}
+}
