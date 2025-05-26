@@ -43,3 +43,42 @@ func TestIterSeq(t *testing.T) {
 		t.Log(p)
 	}
 }
+
+func fibonacci(yield func(int) bool) {
+	i, j := 1, 0
+	for {
+		isBreak := yield(i)
+		if !isBreak {
+			break
+		}
+		i, j = i+j, i
+	}
+}
+
+func TestIterFibPush(t *testing.T) {
+	for n := range fibonacci {
+		if n > 100 {
+			break
+		}
+		println(n)
+	}
+}
+
+func TestIterFibPull(t *testing.T) {
+	next, stop := iter.Pull(fibonacci)
+	i, b := next()
+	t.Log(i, b)
+	i2, b2 := next()
+	t.Log(i2, b2)
+	i3, b3 := next()
+	t.Log(i3, b3)
+	i4, b4 := next()
+	t.Log(i4, b4)
+	for n, ok := next(); ok; n, ok = next() {
+		if n > 100 {
+			stop()
+			break
+		}
+		println(n)
+	}
+}
