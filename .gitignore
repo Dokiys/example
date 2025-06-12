@@ -4,6 +4,8 @@
 **/.DS_Store
 # Binaries for programs and plugins
 **/bin
+# 环境变量
+**/.env
 
 
 ## Go
