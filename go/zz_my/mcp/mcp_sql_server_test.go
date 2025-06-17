@@ -76,6 +76,7 @@ func TestSqlMcpServer(t *testing.T) {
 	// Add tool handler
 	s.AddTool(mcp.NewTool("数据库查询逻辑助手",
 		mcp.WithDescription("任何涉及数据库查询的内容都可以先请求该工具获取帮助，该工具提供业务有关的数据库查询思维逻辑，提供可供参考的SQL生成以及处理流程。"),
+		mcp.WithString("description", mcp.Required(), mcp.Description("描述解释调用该工具的目的")),
 	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		return mcp.NewToolResultText(`
 你可以按照以下流程去分析应该如何完成一次业务相关的查询：
@@ -94,10 +95,8 @@ func TestSqlMcpServer(t *testing.T) {
 
 	s.AddTool(mcp.NewTool("执行SQL工具",
 		mcp.WithDescription("可以帮助执行查询类的SQL并返回信息，每次仅支持单条SQL执行。任何情况下该工具都只能执行查询的SQL操作，禁止任何变更操作执行。"),
-		mcp.WithString("sql",
-			mcp.Required(),
-			mcp.Description("所要执行的sql语句"),
-		),
+		mcp.WithString("sql", mcp.Required(), mcp.Description("所要执行的sql语句")),
+		mcp.WithString("description", mcp.Required(), mcp.Description("描述解释调用该工具的目的")),
 	), SqlExecuteHandler)
 
 	httpServer := server.NewStreamableHTTPServer(s)
@@ -133,21 +132,21 @@ func NewMCPServer() *server.MCPServer {
 	// 	),
 	// ), handleComplexPrompt)
 
-	mcpServer.AddTool(mcp.NewTool("notify"), handleSendNotification)
-	mcpServer.AddTool(mcp.NewTool(
-		string(LONG_RUNNING_OPERATION),
-		mcp.WithDescription(
-			"Demonstrates a long running operation with progress updates",
-		),
-		mcp.WithNumber("duration",
-			mcp.Description("Duration of the operation in seconds"),
-			mcp.DefaultNumber(10),
-		),
-		mcp.WithNumber("steps",
-			mcp.Description("Number of steps in the operation"),
-			mcp.DefaultNumber(5),
-		),
-	), handleLongRunningOperationTool)
+	// mcpServer.AddTool(mcp.NewTool("notify"), handleSendNotification)
+	// mcpServer.AddTool(mcp.NewTool(
+	// 	string(LONG_RUNNING_OPERATION),
+	// 	mcp.WithDescription(
+	// 		"Demonstrates a long running operation with progress updates",
+	// 	),
+	// 	mcp.WithNumber("duration",
+	// 		mcp.Description("Duration of the operation in seconds"),
+	// 		mcp.DefaultNumber(10),
+	// 	),
+	// 	mcp.WithNumber("steps",
+	// 		mcp.Description("Number of steps in the operation"),
+	// 		mcp.DefaultNumber(5),
+	// 	),
+	// ), handleLongRunningOperationTool)
 
 	// s.server.AddTool(mcp.Tool{
 	// 	Name:        string(SAMPLE_LLM),
@@ -248,7 +247,6 @@ func handleSendNotification(ctx context.Context, request mcp.CallToolRequest) (*
 	}, nil
 }
 
-// TODO[Dokiy] to be continued! (2025/6/13)
 func handleLongRunningOperationTool(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	arguments := request.GetArguments()
 	progressToken := request.Params.Meta.ProgressToken
