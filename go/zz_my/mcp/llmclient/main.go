@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/mark3labs/mcp-go/client"
 	"github.com/mark3labs/mcp-go/client/transport"
@@ -29,7 +30,9 @@ func main() {
 		return
 	}
 
-	c.Chat(ctx, "帮我列出最近核销的10张券的券码")
+	c.Chat(ctx, "请帮我统计上周券码核销率与上上周核销率的环比增长率")
+	// c.Chat(ctx, "你是谁？")
+	time.Sleep(time.Second * 2)
 }
 
 type Client struct {
@@ -64,6 +67,75 @@ func NewClient(prompt string) (*Client, error) {
 		return nil, err
 	}
 	return chatClient, nil
+}
+func (c *Client) Chat(ctx context.Context, msg string) {
+	params := openai.ChatCompletionNewParams{
+		Messages: []openai.ChatCompletionMessageParamUnion{
+			openai.SystemMessage(c.SystemPrompt),
+			openai.SystemMessage(fmt.Sprintf("现在时间是：%s", time.Now().Format("2006-01-02 15:04:05"))),
+			openai.UserMessage(msg),
+		},
+		Temperature: param.Opt[float64]{Value: 0.2},
+		Model:       "qwen-plus",
+		Tools:       c.ToolList,
+	}
+
+	for {
+		var acc openai.ChatCompletionAccumulator
+		var stream = c.LLMClient.Chat.Completions.NewStreaming(ctx, params)
+		for stream.Next() {
+			chunk := stream.Current()
+			acc.AddChunk(chunk)
+
+			if len(chunk.Choices) > 0 {
+				// 即使在调用tool_call时也会有Content
+				if chunk.Choices[0].Delta.Content != "" {
+					fmt.Print(chunk.Choices[0].Delta.Content)
+				}
+				if openai.CompletionChoiceFinishReason(chunk.Choices[0].FinishReason) == openai.CompletionChoiceFinishReasonStop {
+					return
+				}
+			}
+
+			if _, ok := acc.JustFinishedContent(); ok {
+				fmt.Println()
+				fmt.Printf("finish-event: Content stream finished")
+				fmt.Println()
+			}
+
+			if _, ok := acc.JustFinishedRefusal(); ok {
+				fmt.Println()
+				fmt.Printf("finish-event: refusal stream finished")
+				fmt.Println()
+			}
+
+			if tool, ok := acc.JustFinishedToolCall(); ok {
+				for _, choice := range acc.Choices {
+					params.Messages = append(params.Messages, choice.Message.ToParam())
+				}
+
+				// TODO[Dokiy] 这里默认用户已经确认进行toolCall (2025/6/17)
+				fmt.Println()
+				fmt.Printf("call tool[%s]\n", tool.Name)
+				fmt.Printf("tool.Arguments:%s\n", tool.Arguments)
+				callToolResult, err := c.callTool(ctx, tool)
+				if err != nil {
+					return
+				}
+
+				for _, content := range callToolResult.Content {
+					if textContext, ok := content.(mcp.TextContent); ok {
+						fmt.Printf("tool.result: %s\n", strconv.Quote(textContext.Text))
+						params.Messages = append(params.Messages, openai.ToolMessage(textContext.Text, tool.ID))
+					}
+				}
+			}
+		}
+		if err := stream.Err(); err != nil {
+			fmt.Printf("Error: %s\n", err)
+			return
+		}
+	}
 }
 func (c *Client) initTools(ctx context.Context) error {
 	initRequest := mcp.InitializeRequest{}
@@ -103,71 +175,6 @@ func (c *Client) initTools(ctx context.Context) error {
 	})
 	return nil
 }
-func (c *Client) Chat(ctx context.Context, msg string) {
-	params := openai.ChatCompletionNewParams{
-		Messages: []openai.ChatCompletionMessageParamUnion{
-			openai.SystemMessage(c.SystemPrompt),
-			openai.UserMessage(msg),
-		},
-		Model: "qwen-plus",
-		Tools: c.ToolList,
-	}
-
-	for {
-		var acc openai.ChatCompletionAccumulator
-		var stream = c.LLMClient.Chat.Completions.NewStreaming(ctx, params)
-		for stream.Next() {
-			chunk := stream.Current()
-			acc.AddChunk(chunk)
-
-			if len(chunk.Choices) > 0 {
-				if openai.CompletionChoiceFinishReason(chunk.Choices[0].FinishReason) == openai.CompletionChoiceFinishReasonStop {
-					return
-				}
-				// 即使在调用tool_call时也会有Content
-				if chunk.Choices[0].Delta.Content != "" {
-					print(chunk.Choices[0].Delta.Content)
-				}
-			}
-
-			if _, ok := acc.JustFinishedContent(); ok {
-				fmt.Println()
-				fmt.Printf("finish-event: Content stream finished")
-			}
-
-			if _, ok := acc.JustFinishedRefusal(); ok {
-				fmt.Println()
-				fmt.Printf("finish-event: refusal stream finished")
-			}
-
-			if tool, ok := acc.JustFinishedToolCall(); ok {
-				for _, choice := range acc.Choices {
-					params.Messages = append(params.Messages, choice.Message.ToParam())
-				}
-
-				// TODO[Dokiy] 这里默认用户已经确认进行toolCall (2025/6/17)
-				fmt.Println()
-				fmt.Printf("call tool[%s], \ntool.Arguments:%s \n", tool.Name, tool.Arguments)
-				callToolResult, err := c.callTool(ctx, tool)
-				if err != nil {
-					return
-				}
-
-				for _, content := range callToolResult.Content {
-					if textContext, ok := content.(mcp.TextContent); ok {
-						fmt.Printf("tool.result: %s\n", strconv.Quote(textContext.Text))
-						params.Messages = append(params.Messages, openai.ToolMessage(textContext.Text, tool.ID))
-					}
-				}
-			}
-		}
-		if err := stream.Err(); err != nil {
-			fmt.Printf("Error: %s\n", err)
-			return
-		}
-	}
-}
-
 func (c *Client) callTool(ctx context.Context, tool openai.FinishedChatCompletionToolCall) (*mcp.CallToolResult, error) {
 	var args map[string]any
 	if err := json.Unmarshal([]byte(tool.Arguments), &args); err != nil {

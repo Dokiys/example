@@ -25,7 +25,7 @@ func (s *SqlExecutor) ToolInfo() mcp.Tool {
 		mcp.WithDescription("该工具能且仅能帮助执行数据查询语句并返回信息"),
 		mcp.WithString("sql",
 			mcp.Required(),
-			mcp.Description("需要执行的SQL语句"),
+			mcp.Description("需要执行的SQL语句，每次仅支持单条SQL查询"),
 		),
 	)
 }
