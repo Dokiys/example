@@ -33,15 +33,15 @@ func BuildClientImpl(id int) *Impl {
 	return NewImpl(conf)
 }
 
-//type A struct {
+// type A struct {
 //	BuildMethod func(id int) *Impl
-//}
+// }
 //
-//func TestBuildClientImpl(t *testing.T) {
+// func TestBuildClientImpl(t *testing.T) {
 //	//a := &A{BuildClientImpl(1)}
 //	a := &A{BuildMethod: BuildClientImpl}
 //	a.BuildMethod(1).Request()
-//}
+// }
 
 type A struct {
 	cf ClientFactory
@@ -87,11 +87,11 @@ func TestImpl2(t *testing.T) {
 	impl2.Request()
 }
 
-//func NewClient(id int) *Impl {
+// func NewClient(id int) *Impl {
 //	conf := doSomeGetConf(id)
 //	fmt.Printf("%d,%d,%d,%s", conf.a, conf.b, conf.c, conf.d)
 //	return &Impl{}
-//}
+// }
 
 // func NewDestroyer() Destroyer {
 func NewDestroyer() *Impl {
@@ -122,8 +122,8 @@ func TestFactory(t *testing.T) {
 	m = make(MConfig)
 	m.init()
 	conf1 := doSomeGetConf(1)
-	//var conf = Config{a: 1,b: 1,c: 1,d: "1"}
-	//c1 := NewClientC(conf)
+	// var conf = Config{a: 1,b: 1,c: 1,d: "1"}
+	// c1 := NewClientC(conf)
 	c1 := NewImpl(conf1)
 	c1.Request()
 

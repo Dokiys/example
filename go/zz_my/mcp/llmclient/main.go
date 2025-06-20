@@ -30,8 +30,10 @@ func main() {
 		return
 	}
 
-	c.Chat(ctx, "请帮我统计上周券码核销率与上上周核销率的环比增长率")
-	// c.Chat(ctx, "你是谁？")
+	// c.Chat(ctx, "请帮我统计上周券码核销率与这周券码核销率的环比增长率")
+	// c.Chat(ctx, "请列出时间处理示例")
+	c.Chat(ctx, "请告诉我上周的时间范围")
+
 	time.Sleep(time.Second * 2)
 }
 
@@ -69,6 +71,7 @@ func NewClient(prompt string) (*Client, error) {
 	return chatClient, nil
 }
 func (c *Client) Chat(ctx context.Context, msg string) {
+	fmt.Println(msg)
 	params := openai.ChatCompletionNewParams{
 		Messages: []openai.ChatCompletionMessageParamUnion{
 			openai.SystemMessage(c.SystemPrompt),
@@ -90,7 +93,7 @@ func (c *Client) Chat(ctx context.Context, msg string) {
 			if len(chunk.Choices) > 0 {
 				// 即使在调用tool_call时也会有Content
 				if chunk.Choices[0].Delta.Content != "" {
-					fmt.Print(chunk.Choices[0].Delta.Content)
+					fmt.Printf("\033[31m%s\033[0m", chunk.Choices[0].Delta.Content)
 				}
 				if openai.CompletionChoiceFinishReason(chunk.Choices[0].FinishReason) == openai.CompletionChoiceFinishReasonStop {
 					return
