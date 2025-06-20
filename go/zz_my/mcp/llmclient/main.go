@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/mark3labs/mcp-go/client"
@@ -29,7 +30,27 @@ func main() {
 		fmt.Printf("Error: %s\n", err)
 		return
 	}
+	if err := c.RegisterMcpClient(ctx, []struct {
+		Name string
+		URL  string
+	}{
+		{
+			Name: "local",
+			URL:  "http://localhost:8080/mcp",
+		},
+		// {
+		// 	Name: "biz",
+		// 	URL:  "http://localhost:8081/coco/admin/mcp",
+		// },
+	}); err != nil {
+		fmt.Printf("Error: %s\n", err)
+		return
+	}
 
+	if err := c.InitTools(ctx); err != nil {
+		fmt.Printf("Error: %s\n", err)
+		return
+	}
 	// c.Chat(ctx, "请帮我统计上周券码核销率与这周券码核销率的环比增长率")
 	// c.Chat(ctx, "请列出时间处理示例")
 	c.Chat(ctx, "请告诉我上周的时间范围")
@@ -39,37 +60,87 @@ func main() {
 
 type Client struct {
 	SystemPrompt string
-	MCP          *client.Client
+	McpList      map[string]*client.Client
 	LLMClient    openai.Client
 	ToolList     []openai.ChatCompletionToolParam
 }
 
 func NewClient(prompt string) (*Client, error) {
-	var ctx = context.Background()
-	var httpURL = "http://localhost:8080/mcp"
-	httpTransport, err := transport.NewStreamableHTTP(httpURL)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create HTTP transport: %v", err)
-	}
-
-	c := client.NewClient(httpTransport)
-	if err := c.Start(ctx); err != nil {
-		return nil, fmt.Errorf("%s", err)
-	}
-
 	chatClient := &Client{
 		SystemPrompt: prompt,
-		MCP:          c,
+		McpList:      make(map[string]*client.Client),
 		LLMClient: openai.NewClient(
 			option.WithAPIKey(os.Getenv("LLM_API_KEY")),
 			option.WithBaseURL(os.Getenv("LLM_API_URL")),
 		),
 	}
-	if err := chatClient.initTools(ctx); err != nil {
-		return nil, err
-	}
 	return chatClient, nil
 }
+
+func (c *Client) RegisterMcpClient(ctx context.Context, endPoints []struct {
+	Name string
+	URL  string
+}) error {
+
+	for _, point := range endPoints {
+		httpTransport, err := transport.NewStreamableHTTP(point.URL)
+		if err != nil {
+			return fmt.Errorf("failed to create HTTP transport: %v", err)
+		}
+
+		mcpClient := client.NewClient(httpTransport)
+		if err := mcpClient.Start(ctx); err != nil {
+			return fmt.Errorf("%s", err)
+		}
+		c.McpList[point.Name] = mcpClient
+	}
+
+	return nil
+}
+func (c *Client) InitTools(ctx context.Context) error {
+	initRequest := mcp.InitializeRequest{}
+	initRequest.Params.Capabilities = mcp.ClientCapabilities{}
+
+	for name, mcpClient := range c.McpList {
+		serverInfo, err := mcpClient.Initialize(ctx, mcp.InitializeRequest{})
+		if err != nil {
+			return fmt.Errorf("failed to initialize: %v", err)
+		}
+
+		var tools []mcp.Tool
+		if serverInfo.Capabilities.Tools != nil {
+			fmt.Println("Fetching available tools...")
+			toolsRequest := mcp.ListToolsRequest{}
+			toolsResult, err := mcpClient.ListTools(ctx, toolsRequest)
+			if err != nil {
+				fmt.Printf("Failed to list tools: %v", err)
+			} else {
+				tools = toolsResult.Tools
+			}
+		}
+
+		c.ToolList = lo.Map(tools, func(tool mcp.Tool, index int) openai.ChatCompletionToolParam {
+			fmt.Printf("Load tool[%s] from %s mcp client\n", tool.Name, name)
+			return openai.ChatCompletionToolParam{
+				Function: shared.FunctionDefinitionParam{
+					Name: name + "__" + tool.Name,
+					Strict: param.Opt[bool]{
+						Value: false,
+					},
+					Description: param.Opt[string]{
+						Value: tool.Description,
+					},
+					Parameters: tool.InputSchema.Properties,
+				},
+				Type: "function",
+			}
+		})
+		fmt.Println()
+	}
+
+	return nil
+}
+
 func (c *Client) Chat(ctx context.Context, msg string) {
 	fmt.Println(msg)
 	params := openai.ChatCompletionNewParams{
@@ -83,7 +154,8 @@ func (c *Client) Chat(ctx context.Context, msg string) {
 		Tools:       c.ToolList,
 	}
 
-	for {
+	var run = true
+	for run {
 		var acc openai.ChatCompletionAccumulator
 		var stream = c.LLMClient.Chat.Completions.NewStreaming(ctx, params)
 		for stream.Next() {
@@ -96,7 +168,7 @@ func (c *Client) Chat(ctx context.Context, msg string) {
 					fmt.Printf("\033[31m%s\033[0m", chunk.Choices[0].Delta.Content)
 				}
 				if openai.CompletionChoiceFinishReason(chunk.Choices[0].FinishReason) == openai.CompletionChoiceFinishReasonStop {
-					return
+					run = false
 				}
 			}
 
@@ -123,6 +195,7 @@ func (c *Client) Chat(ctx context.Context, msg string) {
 				fmt.Printf("tool.Arguments:%s\n", tool.Arguments)
 				callToolResult, err := c.callTool(ctx, tool)
 				if err != nil {
+					fmt.Printf("Error: %s\n", err)
 					return
 				}
 
@@ -132,51 +205,16 @@ func (c *Client) Chat(ctx context.Context, msg string) {
 						params.Messages = append(params.Messages, openai.ToolMessage(textContext.Text, tool.ID))
 					}
 				}
+				fmt.Printf("finish-event: tool_call stream finished")
 			}
 		}
 		if err := stream.Err(); err != nil {
 			fmt.Printf("Error: %s\n", err)
 			return
 		}
+		fmt.Println()
+		fmt.Printf("\033[32mUsage: Total:%v CompletionTokens:%v, PromptTokens:%v\033[0m", acc.Usage.TotalTokens, acc.Usage.CompletionTokens, acc.Usage.PromptTokens)
 	}
-}
-func (c *Client) initTools(ctx context.Context) error {
-	initRequest := mcp.InitializeRequest{}
-	initRequest.Params.Capabilities = mcp.ClientCapabilities{}
-
-	serverInfo, err := c.MCP.Initialize(ctx, mcp.InitializeRequest{})
-	if err != nil {
-		return fmt.Errorf("failed to initialize: %v", err)
-	}
-
-	var tools []mcp.Tool
-	if serverInfo.Capabilities.Tools != nil {
-		fmt.Println("Fetching available tools...")
-		toolsRequest := mcp.ListToolsRequest{}
-		toolsResult, err := c.MCP.ListTools(ctx, toolsRequest)
-		if err != nil {
-			fmt.Printf("Failed to list tools: %v", err)
-		} else {
-			tools = toolsResult.Tools
-		}
-	}
-
-	c.ToolList = lo.Map(tools, func(tool mcp.Tool, index int) openai.ChatCompletionToolParam {
-		return openai.ChatCompletionToolParam{
-			Function: shared.FunctionDefinitionParam{
-				Name: tool.Name,
-				Strict: param.Opt[bool]{
-					Value: false,
-				},
-				Description: param.Opt[string]{
-					Value: tool.Description,
-				},
-				Parameters: tool.InputSchema.Properties,
-			},
-			Type: "function",
-		}
-	})
-	return nil
 }
 func (c *Client) callTool(ctx context.Context, tool openai.FinishedChatCompletionToolCall) (*mcp.CallToolResult, error) {
 	var args map[string]any
@@ -184,10 +222,16 @@ func (c *Client) callTool(ctx context.Context, tool openai.FinishedChatCompletio
 		return nil, err
 	}
 
-	return c.MCP.CallTool(ctx, mcp.CallToolRequest{
-		Params: mcp.CallToolParams{
-			Name:      tool.Name,
-			Arguments: args,
-		},
-	})
+	if s := strings.Split(tool.Name, "__"); len(s) == 2 {
+		if mcpClient, ok := c.McpList[s[0]]; ok {
+			return mcpClient.CallTool(ctx, mcp.CallToolRequest{
+				Params: mcp.CallToolParams{
+					Name:      tool.Name,
+					Arguments: args,
+				},
+			})
+		}
+	}
+
+	return nil, fmt.Errorf("tool register error")
 }

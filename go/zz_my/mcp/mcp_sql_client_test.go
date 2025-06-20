@@ -35,7 +35,7 @@ func TestSqlMcpClient(t *testing.T) {
 	initRequest := mcp.InitializeRequest{}
 	initRequest.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
 	initRequest.Params.ClientInfo = mcp.Implementation{
-		Name:    "MCP-Go Simple Client Example",
+		Name:    "McpList-Go Simple Client Example",
 		Version: "1.0.0",
 	}
 	initRequest.Params.Capabilities = mcp.ClientCapabilities{}

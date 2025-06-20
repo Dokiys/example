@@ -11,7 +11,7 @@ import (
 )
 
 func TestMCP(t *testing.T) {
-	// Create a new MCP server
+	// Create a new McpList server
 	s := server.NewMCPServer(
 		"Current Time",
 		"1.0.0",
@@ -35,7 +35,7 @@ func TestMCP(t *testing.T) {
 	//
 	// 客户的请求：
 	// {"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"Cherry Studio","version":"1.4.1"}},"jsonrpc":"2.0","id":0}
-	// {"jsonrpc":"2.0","method":"notifications/cancelled","params":{"requestId":0,"reason":"McpError: MCP error -32001: Request timed out"}}
+	// {"jsonrpc":"2.0","method":"notifications/cancelled","params":{"requestId":0,"reason":"McpError: McpList error -32001: Request timed out"}}
 	if err := server.ServeStdio(s); err != nil {
 		fmt.Printf("Server error: %v\n", err)
 	}

@@ -150,7 +150,7 @@ func NewMCPServer() *server.MCPServer {
 
 	// s.server.AddTool(mcp.Tool{
 	// 	Name:        string(SAMPLE_LLM),
-	// 	Description: "Samples from an LLM using MCP's sampling feature",
+	// 	Description: "Samples from an LLM using McpList's sampling feature",
 	// 	InputSchema: mcp.ToolInputSchema{
 	// 		Type: "object",
 	// 		Properties: map[string]any{
