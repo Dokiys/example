@@ -116,7 +116,6 @@ func NewMCPServer() *server.MCPServer {
 		server.WithLogging(),
 	)
 
-	// TODO[Dokiy] to be continued! (2025/6/13)
 	mcpServer.AddPrompt(mcp.NewPrompt(string(SIMPLE),
 		mcp.WithPromptDescription("A simple prompt"),
 	), handleSimplePrompt)
