@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"example/go/zz_my/color"
 	"example/go/zz_my/mcp/llmclient/embedding"
 	"github.com/mark3labs/mcp-go/client"
 	"github.com/mark3labs/mcp-go/client/transport"
@@ -126,7 +127,7 @@ func (c *Client) InitTools(ctx context.Context) error {
 	return nil
 }
 func (c *Client) Chat(ctx context.Context, msg string) {
-	fmt.Println(msg)
+	color.Println(msg)
 	if c.EmbeddingClient != nil {
 		vec, err := c.EmbeddingClient.Embedding(ctx, msg)
 		if err != nil {
@@ -143,7 +144,7 @@ func (c *Client) Chat(ctx context.Context, msg string) {
 			}
 
 			msg = fmt.Sprintf(embeddingPrompt, strings.Join(reference, "\n\n"), msg)
-			fmt.Printf("\033[37m知识库召回处理后：%s\033[0m\n", msg)
+			color.PrintfGray("知识库召回处理后：%s\n", msg)
 		}
 	}
 	params := openai.ChatCompletionNewParams{
@@ -168,10 +169,10 @@ func (c *Client) Chat(ctx context.Context, msg string) {
 			if len(chunk.Choices) > 0 {
 				// 即使在调用tool_call时也会有Content
 				if chunk.Choices[0].Delta.Content != "" {
-					fmt.Printf("\033[36m%s\033[0m", chunk.Choices[0].Delta.Content)
+					color.PrintfCyan("%s", chunk.Choices[0].Delta.Content)
 				}
 				if openai.CompletionChoiceFinishReason(chunk.Choices[0].FinishReason) == openai.CompletionChoiceFinishReasonStop {
-					fmt.Println()
+					color.Println()
 					run = false
 				}
 			}
@@ -181,12 +182,14 @@ func (c *Client) Chat(ctx context.Context, msg string) {
 				// fmt.Println()
 				// fmt.Printf("finish-event: Content stream finished")
 				// fmt.Println()
+				panic("JustFinishedContent触发了")
 			}
 
 			if _, ok := acc.JustFinishedRefusal(); ok {
-				fmt.Println()
-				fmt.Printf("finish-event: refusal stream finished")
-				fmt.Println()
+				// fmt.Println()
+				// fmt.Printf("finish-event: refusal stream finished")
+				// fmt.Println()
+				panic("JustFinishedRefusal触发了")
 			}
 
 			if tool, ok := acc.JustFinishedToolCall(); ok {
@@ -194,8 +197,8 @@ func (c *Client) Chat(ctx context.Context, msg string) {
 					params.Messages = append(params.Messages, choice.Message.ToParam())
 				}
 
-				fmt.Printf("ToolCall[%s]\n", tool.Name)
-				fmt.Printf("tool.Arguments:%s\n", tool.Arguments)
+				color.Printf("ToolCall[%s]\n", tool.Name)
+				color.Printf("tool.Arguments:%s\n", tool.Arguments)
 				callToolResult, err := c.callTool(ctx, tool)
 				if err != nil {
 					fmt.Printf("Error: %s\n", err)
@@ -204,7 +207,7 @@ func (c *Client) Chat(ctx context.Context, msg string) {
 
 				for _, content := range callToolResult.Content {
 					if textContext, ok := content.(mcp.TextContent); ok {
-						fmt.Printf("tool.result: %s\n", strconv.Quote(textContext.Text))
+						color.Printf("tool.result: %s\n", strconv.Quote(textContext.Text))
 						params.Messages = append(params.Messages, openai.ToolMessage(textContext.Text, tool.ID))
 					}
 				}
@@ -214,8 +217,8 @@ func (c *Client) Chat(ctx context.Context, msg string) {
 			fmt.Printf("Error: %s\n", err)
 			return
 		}
-		fmt.Printf("\033[37mUsage: Total:%v CompletionTokens:%v, PromptTokens:%v\033[0m\n", acc.Usage.TotalTokens, acc.Usage.CompletionTokens, acc.Usage.PromptTokens)
-		fmt.Println()
+		color.PrintfGray("Usage: Total:%v CompletionTokens:%v, PromptTokens:%v\n", acc.Usage.TotalTokens, acc.Usage.CompletionTokens, acc.Usage.PromptTokens)
+		color.Println()
 	}
 }
 
