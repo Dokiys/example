@@ -11,7 +11,7 @@ import (
 	"regexp"
 	"strings"
 
-	"example/go/zz_my/mcp/llmclient/knowledge/embedding"
+	"example/go/zz_my/llm/llmclient/knowledge/embedding"
 )
 
 //go:embed asset/*

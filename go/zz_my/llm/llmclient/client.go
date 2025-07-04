@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"example/go/zz_my/clog"
-	"example/go/zz_my/mcp/llmclient/knowledge/embedding"
+	"example/go/zz_my/llm/llmclient/knowledge/embedding"
 	"github.com/mark3labs/mcp-go/client"
 	"github.com/mark3labs/mcp-go/client/transport"
 	"github.com/mark3labs/mcp-go/mcp"
@@ -149,11 +149,14 @@ func (c *Client) Chat(ctx context.Context, msg string) {
 
 		var reference = make([]string, 0, c.TopK)
 		for i, chunk := range chunks {
-			if chunk.Score <= 0 {
-				// NOTE[Dokiy] (2025/7/2)
-				// 可以设置相似性要求
+			// 资料相似性过低则不使用
+			if chunk.Score <= 0.3 {
+				continue
 			}
 			reference = append(reference, fmt.Sprintf("%d. %s\n(来源：%s)", i+1, chunk.Text, chunk.Source))
+		}
+		if len(reference) <= 0 {
+			goto SkipRecall
 		}
 
 		msg = fmt.Sprintf(embeddingPrompt, strings.Join(reference, "\n\n"), msg)

@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"example/go/zz_my/mcp/mcpserver/tools"
+	"example/go/zz_my/llm/mcpserver/tools"
 	"github.com/go-sql-driver/mysql"
 	"github.com/mark3labs/mcp-go/server"
 )

@@ -11,7 +11,7 @@ import (
 	"sort"
 	"strings"
 
-	"example/go/zz_my/mcp/llmclient/knowledge/embedding"
+	"example/go/zz_my/llm/llmclient/knowledge/embedding"
 )
 
 //go:embed vector_data_gen.jsonl

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"example/go/zz_my/mcp/llmclient/knowledge/embedding"
+	"example/go/zz_my/llm/llmclient/knowledge/embedding"
 	"github.com/qdrant/go-client/qdrant"
 	"github.com/samber/lo"
 	"google.golang.org/protobuf/proto"

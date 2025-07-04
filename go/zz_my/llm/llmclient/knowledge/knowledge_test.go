@@ -8,9 +8,9 @@ import (
 	"path"
 	"testing"
 
-	"example/go/zz_my/mcp/llmclient/knowledge/embedding"
-	"example/go/zz_my/mcp/llmclient/knowledge/memory"
-	"example/go/zz_my/mcp/llmclient/knowledge/qdrant_search"
+	"example/go/zz_my/llm/llmclient/knowledge/embedding"
+	"example/go/zz_my/llm/llmclient/knowledge/memory"
+	"example/go/zz_my/llm/llmclient/knowledge/qdrant_search"
 	"github.com/joho/godotenv"
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"

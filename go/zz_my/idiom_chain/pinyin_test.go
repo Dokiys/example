@@ -12,7 +12,7 @@ import (
 func TestPinyin(t *testing.T) {
 	// 例如，查找匹配 abdy、a*b*y 这类 abbreviation（拼音首字母缩写）
 	query := "**rz"
-	matches, err := FindIdiomsByPatternStreamed("testdata/pinyin/idiom.json", query)
+	matches, err := findIdiomsByPatternStreamed("testdata/pinyin/idiom.json", query)
 	if err != nil {
 		panic(err)
 	}
@@ -22,15 +22,8 @@ func TestPinyin(t *testing.T) {
 	}
 }
 
-type Idiom struct {
-	Word        string `json:"word"`         // 成语
-	Abbr        string `json:"abbreviation"` // 拼音首字母缩写
-	Pinyin      string `json:"pinyin"`       // 带音调拼音
-	Explanation string `json:"explanation"`  // 释义
-}
-
-// FindIdiomsByPatternStreamed 从大文件中匹配首字母模式并输出成语信息
-func FindIdiomsByPatternStreamed(filePath string, queryPattern string) ([]Idiom, error) {
+// findIdiomsByPatternStreamed 从大文件中匹配首字母模式并输出成语信息
+func findIdiomsByPatternStreamed(filePath string, queryPattern string) ([]Idiom, error) {
 	// 打开 JSON 文件
 	f, err := os.Open(filePath)
 	if err != nil {
