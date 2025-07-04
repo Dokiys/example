@@ -7,7 +7,8 @@ import (
 	"os"
 	"time"
 
-	"example/go/zz_my/mcp/llmclient/embedding"
+	"example/go/zz_my/mcp/llmclient/knowledge/embedding"
+	"example/go/zz_my/mcp/llmclient/knowledge/memory"
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
 )
@@ -22,10 +23,12 @@ func main() {
 		option.WithBaseURL(os.Getenv("LLM_API_URL")),
 	),
 		WithSystemPrompt(systemPrompt),
-		WithEmbeddingClient(embedding.NewClient(openai.NewClient(
+		WithEmbeddingClient(embedding.NewEmbedding(openai.NewClient(
 			option.WithAPIKey(os.Getenv("LLM_API_KEY")),
 			option.WithBaseURL(os.Getenv("LLM_EMBEDDING_API_URL")),
 		), "qwen-text-embedding-v4")),
+		WithEmbeddingRecall(memory.NewEmbeddingRecall()),
+		// WithEmbeddingRecall(qdrant_search.NewEmbeddingRecall()),
 	)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)

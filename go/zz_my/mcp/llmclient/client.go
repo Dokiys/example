@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"example/go/zz_my/clog"
-	"example/go/zz_my/mcp/llmclient/embedding"
+	"example/go/zz_my/mcp/llmclient/knowledge/embedding"
 	"github.com/mark3labs/mcp-go/client"
 	"github.com/mark3labs/mcp-go/client/transport"
 	"github.com/mark3labs/mcp-go/mcp"
@@ -25,18 +25,19 @@ const embeddingPrompt = `
 
 ---
 
-【问题】%s
+【问题】
+%s
 `
 
 type Client struct {
 	SystemPrompt    string
 	McpList         map[string]*client.Client
 	LLMClient       openai.Client
-	EmbeddingClient *embedding.Client
+	EmbeddingClient *embedding.Embedding
+	EmbeddingRecall embedding.Callback
 	TopK            int
 	ToolList        []openai.ChatCompletionToolParam
 }
-
 type Option func(c *Client)
 
 func NewClient(llmClient openai.Client, opts ...Option) (*Client, error) {
@@ -56,9 +57,14 @@ func WithSystemPrompt(prompt string) Option {
 		c.SystemPrompt = prompt
 	}
 }
-func WithEmbeddingClient(client *embedding.Client) Option {
+func WithEmbeddingClient(client *embedding.Embedding) Option {
 	return func(c *Client) {
 		c.EmbeddingClient = client
+	}
+}
+func WithEmbeddingRecall(inf embedding.Callback) Option {
+	return func(c *Client) {
+		c.EmbeddingRecall = inf
 	}
 }
 
@@ -128,25 +134,32 @@ func (c *Client) InitTools(ctx context.Context) error {
 }
 func (c *Client) Chat(ctx context.Context, msg string) {
 	clog.Println(msg)
-	if c.EmbeddingClient != nil {
+	if c.EmbeddingClient != nil && c.EmbeddingRecall != nil {
 		vec, err := c.EmbeddingClient.Embedding(ctx, msg)
 		if err != nil {
 			fmt.Printf("获取用户消息向量失败: %s\n", err)
-		} else {
-			chunks := embedding.SearchTopK(vec, embedding.VectorDataset, c.TopK)
-			var reference = make([]string, 0, c.TopK)
-			for i, chunk := range chunks {
-				if chunk.Score <= 0 {
-					// NOTE[Dokiy] (2025/7/2)
-					// 可以设置相似性要求
-				}
-				reference = append(reference, fmt.Sprintf("%d. %s\n(来源：%s)", i+1, chunk.Text, chunk.Source))
-			}
-
-			msg = fmt.Sprintf(embeddingPrompt, strings.Join(reference, "\n\n"), msg)
-			clog.Printf(clog.LevelGray, "知识库召回处理后：%s\n", msg)
+			goto SkipRecall
 		}
+
+		chunks, err := c.EmbeddingRecall.SearchTopK(ctx, vec, c.TopK)
+		if err != nil {
+			fmt.Printf("获取用户消息向量失败: %s\n", err)
+			goto SkipRecall
+		}
+
+		var reference = make([]string, 0, c.TopK)
+		for i, chunk := range chunks {
+			if chunk.Score <= 0 {
+				// NOTE[Dokiy] (2025/7/2)
+				// 可以设置相似性要求
+			}
+			reference = append(reference, fmt.Sprintf("%d. %s\n(来源：%s)", i+1, chunk.Text, chunk.Source))
+		}
+
+		msg = fmt.Sprintf(embeddingPrompt, strings.Join(reference, "\n\n"), msg)
+		clog.Printf(clog.LevelGray, "知识库召回处理后：%s\n", msg)
 	}
+SkipRecall:
 	params := openai.ChatCompletionNewParams{
 		Messages: []openai.ChatCompletionMessageParamUnion{
 			openai.SystemMessage(c.SystemPrompt),
