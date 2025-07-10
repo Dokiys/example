@@ -37,14 +37,16 @@ type Client struct {
 	EmbeddingRecall embedding.Callback
 	TopK            int
 	ToolList        []openai.ChatCompletionToolParam
+	MaxContext      int
 }
 type Option func(c *Client)
 
 func NewClient(llmClient openai.Client, opts ...Option) (*Client, error) {
 	chatClient := &Client{
-		McpList:   make(map[string]*client.Client),
-		LLMClient: llmClient,
-		TopK:      3,
+		McpList:    make(map[string]*client.Client),
+		LLMClient:  llmClient,
+		TopK:       3,
+		MaxContext: 2,
 	}
 	for _, opt := range opts {
 		opt(chatClient)
@@ -132,8 +134,8 @@ func (c *Client) InitTools(ctx context.Context) error {
 
 	return nil
 }
-func (c *Client) Chat(ctx context.Context, msg string) {
-	clog.Println(msg)
+func (c *Client) Chat(ctx context.Context, contextMsg [][]openai.ChatCompletionMessageParamUnion, msg string) [][]openai.ChatCompletionMessageParamUnion {
+	// 知识库召回
 	if c.EmbeddingClient != nil && c.EmbeddingRecall != nil {
 		vec, err := c.EmbeddingClient.Embedding(ctx, msg)
 		if err != nil {
@@ -150,7 +152,7 @@ func (c *Client) Chat(ctx context.Context, msg string) {
 		var reference = make([]string, 0, c.TopK)
 		for i, chunk := range chunks {
 			// 资料相似性过低则不使用
-			if chunk.Score <= 0.3 {
+			if chunk.Score <= 0.5 {
 				continue
 			}
 			reference = append(reference, fmt.Sprintf("%d. %s\n(来源：%s)", i+1, chunk.Text, chunk.Source))
@@ -163,12 +165,13 @@ func (c *Client) Chat(ctx context.Context, msg string) {
 		clog.Printf(clog.LevelGray, "知识库召回处理后：%s\n", msg)
 	}
 SkipRecall:
+	var msgs []openai.ChatCompletionMessageParamUnion
+	contextMsg = c.keepMaxContext(contextMsg)
+	for _, data := range contextMsg {
+		msgs = append(msgs, data...)
+	}
 	params := openai.ChatCompletionNewParams{
-		Messages: []openai.ChatCompletionMessageParamUnion{
-			openai.SystemMessage(c.SystemPrompt),
-			openai.SystemMessage(fmt.Sprintf("现在时间是：%s。请在调用工具的同时进行简单说明。", time.Now().Format("2006-01-02 15:04:05"))),
-			openai.UserMessage(msg),
-		},
+		Messages:    append(msgs, openai.UserMessage(msg)),
 		Temperature: param.Opt[float64]{Value: 0},
 		Model:       "qwen-plus",
 		Tools:       c.ToolList,
@@ -185,9 +188,15 @@ SkipRecall:
 			if len(chunk.Choices) > 0 {
 				// 即使在调用tool_call时也会有Content
 				if chunk.Choices[0].Delta.Content != "" {
+					// TODO[Dokiy] to be continued! (2025/7/10)
+					// 这里llm的回复又没添加到返回到contextMsg中，导致第二用户提问携带的上下文没有llm回复的数据
 					clog.Printf(clog.LevelCyan, "%s", chunk.Choices[0].Delta.Content)
+					// openai.AssistantMessage(ChatCompletionAssistantMessageParamContentArrayOfContentPartUnion)
 				}
 				if openai.CompletionChoiceFinishReason(chunk.Choices[0].FinishReason) == openai.CompletionChoiceFinishReasonStop {
+					for _, choice := range acc.Choices {
+						params.Messages = append(params.Messages, choice.Message.ToParam())
+					}
 					clog.Println()
 					run = false
 				}
@@ -218,7 +227,7 @@ SkipRecall:
 				callToolResult, err := c.callTool(ctx, tool)
 				if err != nil {
 					fmt.Printf("Error: %s\n", err)
-					return
+					return nil
 				}
 
 				for _, content := range callToolResult.Content {
@@ -231,11 +240,13 @@ SkipRecall:
 		}
 		if err := stream.Err(); err != nil {
 			fmt.Printf("Error: %s\n", err)
-			return
+			return nil
 		}
 		clog.Printf(clog.LevelGray, "Usage: Total:%v CompletionTokens:%v, PromptTokens:%v\n", acc.Usage.TotalTokens, acc.Usage.CompletionTokens, acc.Usage.PromptTokens)
 		clog.Println()
 	}
+
+	return c.keepMaxContext(append(contextMsg, params.Messages[len(msgs):]))
 }
 
 func (c *Client) callTool(ctx context.Context, tool openai.FinishedChatCompletionToolCall) (*mcp.CallToolResult, error) {
@@ -256,4 +267,18 @@ func (c *Client) callTool(ctx context.Context, tool openai.FinishedChatCompletio
 	}
 
 	return nil, fmt.Errorf("tool register error")
+}
+
+func (c *Client) keepMaxContext(context [][]openai.ChatCompletionMessageParamUnion) [][]openai.ChatCompletionMessageParamUnion {
+	if len(context) <= 0 {
+		context = append(context, []openai.ChatCompletionMessageParamUnion{
+			openai.SystemMessage(c.SystemPrompt + fmt.Sprintf("现在时间是：%s。", time.Now().Format("2006-01-02 15:04:05"))),
+		})
+	}
+
+	if len(context) > c.MaxContext+1 {
+		context = append(context[:1], context[len(context)-c.MaxContext+1:]...)
+	}
+
+	return context
 }
