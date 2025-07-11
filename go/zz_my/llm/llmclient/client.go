@@ -136,7 +136,7 @@ func (c *Client) InitTools(ctx context.Context) error {
 }
 func (c *Client) Chat(ctx context.Context, contextMsg [][]openai.ChatCompletionMessageParamUnion, msg string) [][]openai.ChatCompletionMessageParamUnion {
 	// 知识库召回
-	if c.EmbeddingClient != nil && c.EmbeddingRecall != nil {
+	if c.EmbeddingClient != nil && c.EmbeddingRecall != nil && msg != "" {
 		vec, err := c.EmbeddingClient.Embedding(ctx, msg)
 		if err != nil {
 			fmt.Printf("获取用户消息向量失败: %s\n", err)
@@ -188,10 +188,7 @@ SkipRecall:
 			if len(chunk.Choices) > 0 {
 				// 即使在调用tool_call时也会有Content
 				if chunk.Choices[0].Delta.Content != "" {
-					// TODO[Dokiy] to be continued! (2025/7/10)
-					// 这里llm的回复又没添加到返回到contextMsg中，导致第二用户提问携带的上下文没有llm回复的数据
 					clog.Printf(clog.LevelCyan, "%s", chunk.Choices[0].Delta.Content)
-					// openai.AssistantMessage(ChatCompletionAssistantMessageParamContentArrayOfContentPartUnion)
 				}
 				if openai.CompletionChoiceFinishReason(chunk.Choices[0].FinishReason) == openai.CompletionChoiceFinishReasonStop {
 					for _, choice := range acc.Choices {
