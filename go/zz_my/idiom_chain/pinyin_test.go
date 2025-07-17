@@ -11,8 +11,8 @@ import (
 
 func TestPinyin(t *testing.T) {
 	// 例如，查找匹配 abdy、a*b*y 这类 abbreviation（拼音首字母缩写）
-	query := "**rz"
-	matches, err := findIdiomsByPatternStreamed("testdata/pinyin/idiom.json", query)
+	query := "fndp"
+	matches, err := findIdiomsByPatternStreamed("idiom.json", query)
 	if err != nil {
 		panic(err)
 	}
