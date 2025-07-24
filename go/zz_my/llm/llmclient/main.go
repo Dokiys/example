@@ -41,6 +41,9 @@ func main() {
 		fmt.Printf("Error: %s\n", err)
 		return
 	}
+
+	// TODO[Dokiy] to be continued! (2025/7/23)
+	// 添加cursor的mcp.json导入支持
 	if err := c.RegisterMcpClient(ctx, []EndPoint{
 		// {
 		// 	Name: "local",

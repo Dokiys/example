@@ -1,12 +1,16 @@
 package main
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"example/go/zz_my/llm/mcpserver/tools"
 	"github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 	"github.com/mark3labs/mcp-go/server"
 )
 
@@ -38,16 +42,28 @@ func initDb() (*sql.DB, func()) {
 	}
 }
 func main() {
+	godotenv.Load()
 	db, cancel := initDb()
 	defer cancel()
 
 	s := NewMCPServer()
 	// Add Tools
 	s.RegisterTool(tools.NewSqlExecutor(db))
-
 	httpServer := server.NewStreamableHTTPServer(s.MCPServer)
-	log.Printf("HTTP server listening on :8080/mcp")
-	if err := httpServer.Start(":8080"); err != nil {
+
+	log.Printf("HTTP server listening on :8081/mcp")
+	err := http.ListenAndServe(":8081", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		auth := r.Header.Get("Authorization")
+
+		if auth != "123" {
+			w.WriteHeader(http.StatusForbidden)
+			w.Header().Set("Content-Type", "application/json")
+			w.Write([]byte(`{"error":"forbidden"}`))
+			return
+		}
+		httpServer.ServeHTTP(w, r)
+	}))
+	if err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
 }
@@ -57,12 +73,18 @@ type MCPServer struct {
 }
 
 func NewMCPServer() MCPServer {
+	hooks := &server.Hooks{}
+	hooks.AddOnRequestInitialization(func(ctx context.Context, id any, message any) error {
+		fmt.Printf("AddOnRequestInitialization: %v, %v\n", id, message)
+		return nil
+	})
 	mcpServer := server.NewMCPServer(
 		"MCP服务助手",
 		"1.0.0",
 		server.WithPromptCapabilities(true),
 		server.WithToolCapabilities(true),
 		server.WithLogging(),
+		server.WithHooks(hooks),
 	)
 
 	return MCPServer{

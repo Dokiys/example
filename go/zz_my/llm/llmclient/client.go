@@ -82,6 +82,9 @@ func (c *Client) RegisterMcpClient(ctx context.Context, endPoints []EndPoint) er
 			return fmt.Errorf("failed to create HTTP transport: %v", err)
 		}
 
+		// TODO[Dokiy] to be continued! (2025/7/23)
+		// http请求添加header
+		// client.NewStreamableHttpClient("", transport.WithHTTPHeaderFunc())
 		mcpClient := client.NewClient(httpTransport)
 		if err := mcpClient.Start(ctx); err != nil {
 			return fmt.Errorf("%s", err)
