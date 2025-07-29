@@ -7,51 +7,39 @@ handle_error() {
     exit 2
 }
 
-# Check WIP commits && DELETE ME
-(
-  red_color='\033[0;31m' # red_color
-  zero=$(git hash-object --stdin </dev/null | tr '[0-9a-f]' '0')
-  while read local_ref local_oid remote_ref remote_oid; do
-    if test "$local_oid" = "$zero"; then
-      # Handle delete
-      :
-    else
-      if test "$remote_oid" = "$zero"; then
-        # New branch, examine parent branch
-        split_id=$(git --no-pager reflog $local_ref | tail -n 1 | awk '{print $1}')
-        range="$split_id..$local_ref"
-        fixme_range="$split_id..$local_ref"
-      else
-        # Update to existing branch, examine new commits
-        range="$remote_oid..$local_oid"
-        fixme_range="$remote_oid..$local_oid"
-      fi
+# Check WIP commits -- compatible with Lefthook (no stdin)
+# ============================================
+red_color='\033[0;31m'
+reset_color='\033[0m'
 
-  		# Check for WIP commits
-  		remote_commit=$(git --no-pager log --pretty=format:'%s' $remote_ref -1 | grep -q -- '--wip--') # remote WIP commit
-  		commits=$(git rev-list -n 1 --grep '--wip--' "$range") # local WIP commit
-  		if [ -n "$commits" ] || [ -n "$remote_commit" ]; then
-  			echo >&2 "Found [WIP] commits in $local_ref, not pushing"
-        echo >&2 "  (use \"git push --no-verify\" to discard)"
-        for commit in $commits; do
-          echo 1>&2 "${red_color}commit ${commit}"
-        done
-        echo >&2 ""
-        exit 2
-  		fi
+# 获取当前本地分支名
+local_branch=$(git symbolic-ref --quiet --short HEAD)
 
-      # Check for FIXME ME
-#      fixme_list=$(git --no-pager diff $fixme_range | grep '+' | grep 'FIXME\[Dokiy\]')
-#      if test -n "$fixme_list" ; then
-#        echo >&2 "Found [FIXME] commits in $local_ref, not pushing"
-#        echo >&2 "  (use \"git push --no-verify\" to discard)"
-#        echo "${red_color}${fixme_list}"
-#        echo >&2 ""
-#        exit 2
-#      fi
-    fi
+# 获取当前分支的上游远程分支，如 origin/main
+remote_branch=$(git for-each-ref --format='%(upstream:short)' "refs/heads/${local_branch}")
+
+# 推送的提交范围
+if [ -z "$remote_branch" ]; then
+  # 若无 upstream，推测为新建或第一次 push，使用最近 N 次提交
+  range="HEAD~10..HEAD"
+else
+  # 正常使用远程分支为比较基线
+  range="${remote_branch}..${local_branch}"
+fi
+
+# 查找所有包含 "--wip--" 的提交（表示工作中、未完成，不应推送）
+commits=$(git log --pretty=format:'%H %s' $range | grep -- '--wip--')
+
+if [ -n "$commits" ]; then
+  echo >&2 "🚫 检测到包含 \"--wip--\" 的提交，阻止 push"
+  echo >&2 "以下为匹配的提交记录（可使用 \"git push --no-verify\" 忽略检查）："
+  echo "$commits" | while read -r line; do
+    echo 1>&2 "$line"
   done
-) &
+  echo >&2 ""
+  exit 2
+fi
+
 
 # Check wire
 (
@@ -66,7 +54,6 @@ handle_error() {
     done
   fi
 ) &
-
 
 # 等待所有后台任务完成
 wait
