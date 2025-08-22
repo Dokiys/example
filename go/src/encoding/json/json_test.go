@@ -127,3 +127,30 @@ func TestJsonSlice(t *testing.T) {
 	t.Log(string(b2))
 	t.Log(string(b3))
 }
+
+// TestJsonRawMessage 使用json.RawMessage定义动态的字段
+func TestJsonRawMessage(t *testing.T) {
+	type QueryParam struct {
+		// 否 -- 检索过滤条件
+		DocFilter json.RawMessage `json:"doc_filter,omitempty"`
+		// 否 0.5 混合检索中稠密向量的权重 [0.2, 1]
+		DenseWeight float64 `json:"dense_weight,omitempty"`
+	}
+
+	a := QueryParam{}
+	a.DocFilter = json.RawMessage(`{"a":123}`)
+
+	b := QueryParam{}
+	b.DocFilter = json.RawMessage(`{"b":"abc"}`)
+
+	marshalA, err := json.Marshal(a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	marshalB, err := json.Marshal(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(string(marshalA))
+	t.Log(string(marshalB))
+}
