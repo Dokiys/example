@@ -1,4 +1,4 @@
-module aicommit
+module github.com/Dokiys/example/go/zz_my/llm/aicommit
 
 go 1.24
 
