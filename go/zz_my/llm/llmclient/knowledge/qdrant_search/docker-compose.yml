@@ -7,4 +7,4 @@ services:
       - "6333:6333"
       - "6334:6334"
     volumes:
-      - ~/testdata/qdrant_storage:/qdrant/storage
+      - ./testdata/qdrant_storage:/qdrant/storage

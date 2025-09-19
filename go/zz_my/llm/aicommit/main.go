@@ -9,7 +9,6 @@ import (
 
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
-	"github.com/samber/lo"
 )
 
 func checkCommandExists(name string) {
@@ -59,8 +58,11 @@ git --no-pager diff -U0 --name-only --diff-filter=A head ":(exclude)*.pb*.go" | 
 		option.WithAPIKey(os.Getenv("LLM_API_KEY")),
 		option.WithBaseURL(os.Getenv("LLM_API_URL")),
 	)
-	var resp *openai.ChatCompletion
-	resp, err = client.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
+	model := os.Getenv("LLM_MODEL")
+	if model == "" {
+		model = "qwen-plus-latest"
+	}
+	resp, err := client.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
 		Messages: []openai.ChatCompletionMessageParamUnion{
 			openai.SystemMessage(`
 请你作为一个摘要生成工具，帮我生成git commit提交时的comment信息。请根据以下文件差异，用简洁明了的完整句子（现在时）撰写一条有意义的 Git 提交信息，且长度不超过 74 个字符。
@@ -82,7 +84,7 @@ git --no-pager diff -U0 --name-only --diff-filter=A head ":(exclude)*.pb*.go" | 
 `),
 			openai.UserMessage(string(output)),
 		},
-		Model: lo.Ternary(os.Getenv("LLM_MODEL") != "", os.Getenv("LLM_MODEL"), "qwen-plus-latest"),
+		Model: model,
 	})
 	if err != nil {
 		comment = fmt.Sprintln("LLM 处理失败:", err)
@@ -92,8 +94,9 @@ git --no-pager diff -U0 --name-only --diff-filter=A head ":(exclude)*.pb*.go" | 
 
 	var selected bytes.Buffer
 	fzf := exec.Command("fzf")
-	commitOptions := []byte(comment + "\n")
-	commitOptions = append(commitOptions, "fix: some\n"...) // 添加 AI 建议
+	commitOptions := []byte(comment + "\n") // 添加 AI 建议
+	commitOptions = append(commitOptions, "fix: some\n"...)
+	commitOptions = append(commitOptions, fmt.Sprintf("total tokens: %d\n", resp.Usage.TotalTokens)...)
 	fzf.Stdin = bytes.NewReader(commitOptions)
 	fzf.Stdout = &selected
 	if err := fzf.Run(); err != nil {
