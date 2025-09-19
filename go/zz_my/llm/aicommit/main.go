@@ -80,7 +80,7 @@ git --no-pager diff -U0 --name-only --diff-filter=A head ":(exclude)*.pb*.go" | 
 | build   | 构建相关改动（webpack、vite、脚本等）      |
 | ci      | CI 配置或脚本变动（如 GitHub Actions）     |
 | revert  | 撤销某次提交                               |
-提交信息中包含的文件差异内容如下（删除的行以单个减号开头，新增的行以单个加号开头）：。
+提交信息中包含的文件差异内容如下（删除的行以单个减号开头，新增的行以单个加号开头。如果没有提供任何变更内容则直接回复‘无内容变更’）：
 `),
 			openai.UserMessage(string(output)),
 		},
