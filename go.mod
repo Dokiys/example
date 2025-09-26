@@ -1,6 +1,6 @@
 module example
 
-go 1.24
+go 1.25
 
 require (
 	github.com/Dokiys/go_test/go v0.0.0-20231020132035-6215f49d5502

@@ -12,7 +12,7 @@ import (
 
 func TestSqlMcpClient(t *testing.T) {
 	var ctx = context.Background()
-	var httpURL = "http://localhost:8081/mcp"
+	var httpURL = "http://localhost:8080/mcp"
 
 	httpTransport, err := transport.NewStreamableHTTP(httpURL)
 	if err != nil {
