@@ -1,11 +1,31 @@
 package localcache
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestName(t *testing.T) {
-	a := map[string]any{}
-	a["1"] = 1
-	a["2"] = "2"
-	a["3"] = true
-	t.Log(a)
+	type S [2]any
+	s := S{"1", 2}
+	s2 := S{"1", 2}
+	if s == s2 {
+		t.Log("==")
+	}
+}
+
+var _ IModel = (*MockIModel)(nil)
+
+type MockIModel struct{}
+
+func (m MockIModel) TableName() string {
+	// TODO implement me
+	panic("implement me")
+}
+func (m MockIModel) PK() string {
+	// TODO implement me
+	panic("implement me")
+}
+
+func TestNew(t *testing.T) {
+	_ = NewLocalCache[[2]any, MockIModel](nil, nil, PkDbTags("", ""))
 }

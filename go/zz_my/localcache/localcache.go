@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"log/slog"
 	"reflect"
+	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -27,6 +29,7 @@ type Options struct {
 	maxSize    int
 	status     any
 	withStatus bool
+	pkTags     []string
 }
 type LocalOption func(*Options)
 
@@ -46,6 +49,14 @@ func WithStatus(status any) LocalOption {
 	}
 }
 
+type PKTagsOptions func(*Options)
+
+func PkDbTags(tags ...string) PKTagsOptions {
+	return func(o *Options) {
+		o.pkTags = tags
+	}
+}
+
 type LocalCache[S comparable, T IModel] struct {
 	db *sqlx.DB
 	*Options
@@ -55,37 +66,52 @@ type LocalCache[S comparable, T IModel] struct {
 	noRows   map[S]struct{}
 	vm       VersionManager
 
-	// TODO[Dokiy] to be continued! (2025/11/26)
-	// 添加联合唯一键查找
-	tableName   string
-	keyDbTag    string
-	tagFieldIdx int
+	tableName     string
+	keyDbTags     []string
+	tagFieldIdxes []int
 }
 
 const (
 	defaultSize = 10000
 )
 
-func NewLocalCache[S comparable, T IModel](db *sqlx.DB, vm VersionManager, keyDbTag string, opts ...LocalOption) LocalCache[S, T] {
+// NewLocalCache
+// TODO[Dokiy] 修改范型 (2025/12/19)
+// 目前不知道这里如何限制S必须是[x]any的数组。而且也不知道如何让[2]any的长度直接跟keyDbTags长度挂钩
+// _ = NewLocalCache[[2]any, MockIModel](nil, nil, []string{})
+func NewLocalCache[S comparable, T IModel](db *sqlx.DB, vm VersionManager, pkTags PKTagsOptions, opts ...LocalOption) LocalCache[S, T] {
 	var t = new(T)
 	var option = &Options{
 		maxSize: defaultSize,
 	}
+	pkTags(option)
 	for _, opt := range opts {
 		opt(option)
 	}
 	localCache := LocalCache[S, T]{
-		db:          db,
-		Options:     option,
-		initOnce:    &sync.Once{},
-		noRows:      make(map[S]struct{}),
-		vm:          vm,
-		tableName:   (*t).TableName(),
-		keyDbTag:    keyDbTag,
-		tagFieldIdx: -1,
+		db:            db,
+		Options:       option,
+		initOnce:      &sync.Once{},
+		noRows:        make(map[S]struct{}),
+		vm:            vm,
+		tableName:     (*t).TableName(),
+		keyDbTags:     option.pkTags,
+		tagFieldIdxes: make([]int, len(option.pkTags)),
 	}
 	if localCache.maxSize <= 0 {
 		panic("LocalCache init: invalid config")
+	}
+	if len(localCache.pkTags) <= 0 {
+		panic("LocalCache init: invalid keyDbTags length")
+	}
+
+	var s S
+	typ := reflect.TypeOf(s)
+	if typ.Kind() != reflect.Array || !typ.Comparable() {
+		panic("LocalCache init: invalid key type")
+	}
+	if typ.Len() != len(localCache.pkTags) {
+		panic("LocalCache init: invalid key type length which must be equal to keyDbTags length")
 	}
 	localCache.indexTagField(*t)
 
@@ -95,20 +121,46 @@ func NewLocalCache[S comparable, T IModel](db *sqlx.DB, vm VersionManager, keyDb
 func (l *LocalCache[S, T]) IncrVersion(ctx context.Context) (string, error) {
 	return l.vm.IncrVersion(ctx, l.tableName)
 }
-func (l *LocalCache[S, T]) GetLocal(ctx context.Context, s S) (t *T, err error) {
+
+func (l *LocalCache[S, T]) GetLocal(ctx context.Context, params ...any) (t *T, err error) {
 	l.initOnce.Do(l.init)
-	if t, ok := l.lruCache.Peek(s); ok {
-		return &t, nil
-	}
-	if _, ok := l.noRows[s]; ok {
-		return nil, sql.ErrNoRows
+
+	// 尝试从缓存获取数据
+	var s S
+	{
+		if reflect.ValueOf(&s).Len() != len(params) {
+			panic("field value type is not assignable/convertible to array element type")
+		}
+		sv := reflect.ValueOf(&s).Elem()
+		for i, param := range params {
+			elem := sv.Index(i)
+			fv := reflect.ValueOf(param)
+			if fv.Type().AssignableTo(elem.Type()) {
+				elem.Set(fv)
+			} else if fv.Type().ConvertibleTo(elem.Type()) {
+				elem.Set(fv.Convert(elem.Type()))
+			} else {
+				panic("field value type is not assignable/convertible to array element type")
+			}
+		}
+
+		if t, ok := l.lruCache.Peek(s); ok {
+			return &t, nil
+		}
+		if _, ok := l.noRows[s]; ok {
+			return nil, sql.ErrNoRows
+		}
 	}
 
 	var mdl T
-	var args = []any{s}
-	var sqlStr = fmt.Sprintf("SELECT * FROM %s t WHERE t.%s = ?", l.tableName, l.keyDbTag)
+	var args = params
+	where := make([]string, 0, len(l.keyDbTags))
+	for _, tag := range l.keyDbTags {
+		where = append(where, fmt.Sprintf(" t.%s = ?", tag))
+	}
+	var sqlStr = fmt.Sprintf("SELECT * FROM %s t WHERE %s", l.tableName, strings.Join(where, " AND "))
 	if l.Options.withStatus {
-		sqlStr = fmt.Sprintf("SELECT * FROM %s t WHERE t.%s = ? AND t.status = ?", l.tableName, l.keyDbTag)
+		sqlStr = fmt.Sprintf("SELECT * FROM %s t WHERE %s AND t.status = ?", l.tableName, strings.Join(where, " AND "))
 		args = append(args, l.Options.status)
 	}
 	if err := l.db.GetContext(ctx, &mdl, sqlStr, args...); err != nil {
@@ -131,20 +183,22 @@ func (l *LocalCache[S, T]) indexTagField(t T) {
 		panic("LocalCache load: provided value is not a struct")
 	}
 
-	var hasIdxTag, hasStatusTag bool
+	var hasStatusTag bool
+	var s S
 	for j := 0; j < tValue.NumField(); j++ {
 		tag, ok := tValue.Type().Field(j).Tag.Lookup("db")
 		if !ok {
 			continue
 		}
 
-		if tag == l.keyDbTag {
-			if tValue.Field(j).Type().AssignableTo(reflect.TypeOf(*new(S))) {
-				l.tagFieldIdx = j
-				if !l.Options.withStatus || hasStatusTag {
+		if idx := slices.Index(l.keyDbTags, tag); idx != -1 {
+			// 检验能否存入S
+			sv := reflect.ValueOf(&s).Elem()
+			if tValue.Field(j).Type().AssignableTo(sv.Index(idx).Type()) || tValue.Field(j).Type().ConvertibleTo(sv.Index(idx).Type()) {
+				// 保证tagFieldIdxes的顺序，在插入和读取数据的时候都比较key，顺序不同导致key不同。
+				l.tagFieldIdxes[idx] = j
+				if len(l.tagFieldIdxes) == len(l.keyDbTags) && (!l.Options.withStatus || hasStatusTag) {
 					return
-				} else {
-					hasIdxTag = true
 				}
 			} else {
 				panic("LocalCache load: cannot assign field to type S")
@@ -152,7 +206,7 @@ func (l *LocalCache[S, T]) indexTagField(t T) {
 		}
 		if tag == "status" && l.Options.withStatus {
 			if reflect.TypeOf(l.Options.status).AssignableTo(tValue.Field(j).Type()) {
-				if hasIdxTag {
+				if len(l.tagFieldIdxes) == len(l.keyDbTags) {
 					return
 				} else {
 					hasStatusTag = true
@@ -163,7 +217,7 @@ func (l *LocalCache[S, T]) indexTagField(t T) {
 		}
 	}
 
-	panic("LocalCache load: no field with db tag '" + l.keyDbTag + "' or 'status' found")
+	panic("LocalCache load: no field with db tag '" + strings.Join(l.keyDbTags, ",") + "' or 'status' found")
 }
 func (l *LocalCache[S, T]) init() {
 	l.lruCache, _ = lru.New[S, T](l.maxSize)
@@ -235,5 +289,21 @@ func (l *LocalCache[S, T]) init() {
 }
 func (l *LocalCache[S, T]) add(t T) {
 	tValue := reflect.ValueOf(t)
-	l.lruCache.Add(tValue.Field(l.tagFieldIdx).Interface().(S), t)
+
+	var s S
+	sv := reflect.ValueOf(&s).Elem() // sv 是 S 的可设置值（array）
+	for i, idx := range l.tagFieldIdxes {
+		// 取出 T 中对应字段的值
+		fv := tValue.Field(idx)
+		// 将字段值写入数组第 i 个元素
+		elem := sv.Index(i)
+		if fv.Type().AssignableTo(elem.Type()) {
+			elem.Set(fv)
+		} else if fv.Type().ConvertibleTo(elem.Type()) {
+			elem.Set(fv.Convert(elem.Type()))
+		} else {
+			panic("LocalCache add: cannot assign field to type S")
+		}
+	}
+	l.lruCache.Add(s, t)
 }

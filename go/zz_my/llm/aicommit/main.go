@@ -86,17 +86,19 @@ git --no-pager diff -U0 --name-only --diff-filter=A head ":(exclude)*.pb*.go" | 
 		},
 		Model: model,
 	})
+	var tokens int64
 	if err != nil {
 		comment = fmt.Sprintln("LLM 处理失败:", err)
 	} else {
 		comment = resp.Choices[0].Message.Content
+		tokens = resp.Usage.TotalTokens
 	}
 
 	var selected bytes.Buffer
 	fzf := exec.Command("fzf")
 	commitOptions := []byte(comment + "\n") // 添加 AI 建议
 	commitOptions = append(commitOptions, "fix: some\n"...)
-	commitOptions = append(commitOptions, fmt.Sprintf("total tokens: %d\n", resp.Usage.TotalTokens)...)
+	commitOptions = append(commitOptions, fmt.Sprintf("total tokens: %d\n", tokens)...)
 	fzf.Stdin = bytes.NewReader(commitOptions)
 	fzf.Stdout = &selected
 	if err := fzf.Run(); err != nil {
